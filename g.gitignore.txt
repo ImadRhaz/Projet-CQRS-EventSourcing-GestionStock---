@@ -1,0 +1,36 @@
+# Dépendances et packages
+/packages
+/node_modules
+/bower_components
+*.nuget/NuGet.Config
+
+# Fichiers de compilation
+/bin
+/obj
+/Debug
+/Release
+*.exe
+*.dll
+*.pdb
+*.suo
+*.userprefs
+
+# Fichiers Visual Studio
+.vs/
+*.csproj.user
+*.sln.docstates
+
+# Fichiers JetBrains Rider
+.idea/
+*.iml
+
+# Fichiers OS
+.DS_Store
+Thumbs.db
+
+# Autres
+*.log
+/publish
+
+# NuGet
+*.nupkg

@@ -1,0 +1,22 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+dotnet ef migrations add InitialCreate --project GestionFM1.Write --startup-project GestionFM1.API --context EventStoreDbContext
+dotnet ef database update --project GestionFM1.Write --startup-project GestionFM1.API --context EventStoreDbContext
+
+
+
+dotnet ef migrations add InitialCreate --project GestionFM1.Read --startup-project GestionFM1.API --context QueryDbContext
+dotnet ef database update --project GestionFM1.Read --startup-project GestionFM1.API --context QueryDbContext
