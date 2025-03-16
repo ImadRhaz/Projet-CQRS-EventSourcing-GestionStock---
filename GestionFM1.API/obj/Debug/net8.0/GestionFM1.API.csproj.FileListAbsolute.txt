@@ -164,3 +164,4 @@ C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.API\obj\
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.API\obj\Debug\net8.0\GestionFM1.API.pdb
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.API\obj\Debug\net8.0\GestionFM1.API.genruntimeconfig.cache
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.API\obj\Debug\net8.0\ref\GestionFM1.API.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.API\obj\Debug\net8.0\GestionFM1.API.sourcelink.json

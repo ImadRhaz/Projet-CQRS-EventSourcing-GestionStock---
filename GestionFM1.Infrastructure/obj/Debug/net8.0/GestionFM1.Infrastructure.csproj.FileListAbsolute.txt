@@ -15,3 +15,4 @@ C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Infrastr
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Infrastructure\obj\Debug\net8.0\refint\GestionFM1.Infrastructure.dll
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Infrastructure\obj\Debug\net8.0\GestionFM1.Infrastructure.pdb
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Infrastructure\obj\Debug\net8.0\ref\GestionFM1.Infrastructure.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Infrastructure\obj\Debug\net8.0\GestionFM1.Infrastructure.sourcelink.json

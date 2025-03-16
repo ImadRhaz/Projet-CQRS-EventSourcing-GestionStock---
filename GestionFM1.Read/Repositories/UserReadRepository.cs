@@ -4,17 +4,25 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using GestionFM1.Core.Interfaces;
-using Microsoft.Extensions.Logging;
 
-namespace GestionFM1.Read.Repositories;
-
-public class UserReadRepository 
+namespace GestionFM1.Read.Repositories
 {
-    private readonly QueryDbContext _queryDbContext;
-    private readonly ILogger<UserReadRepository> _logger;
-
-    public UserReadRepository(QueryDbContext queryDbContext)
+    public class UserReadRepository : IUserReadRepository
     {
+        private readonly QueryDbContext _queryDbContext;
+
+        public UserReadRepository(QueryDbContext queryDbContext)
+        {
+            _queryDbContext = queryDbContext;
+        }
+
+        
+
+        public async Task<IList<string>> GetUserRolesAsync(string userId)
+        {
+            return new List<string>();
+        }
+
        
     }
 }

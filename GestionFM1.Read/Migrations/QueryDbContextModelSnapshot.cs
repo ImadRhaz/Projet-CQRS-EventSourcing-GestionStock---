@@ -22,6 +22,44 @@ namespace GestionFM1.Read.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("GestionFM1.Core.Models.FM1", b =>
+                {
+                    b.Property<Guid?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CodeSite")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DateEntre")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeviceType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExpertId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("ExpirationVerification")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PsSn")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpertId");
+
+                    b.ToTable("FM1s", (string)null);
+                });
+
             modelBuilder.Entity("GestionFM1.Core.Models.User", b =>
                 {
                     b.Property<string>("Id")
@@ -226,6 +264,15 @@ namespace GestionFM1.Read.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("GestionFM1.Core.Models.FM1", b =>
+                {
+                    b.HasOne("GestionFM1.Core.Models.User", "Expert")
+                        .WithMany()
+                        .HasForeignKey("ExpertId");
+
+                    b.Navigation("Expert");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -158,6 +158,29 @@ namespace GestionFM1.Read.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "FM1s",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CodeSite = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DeviceType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PsSn = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DateEntre = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ExpirationVerification = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ExpertId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FM1s", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FM1s_AspNetUsers_ExpertId",
+                        column: x => x.ExpertId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -196,6 +219,11 @@ namespace GestionFM1.Read.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FM1s_ExpertId",
+                table: "FM1s",
+                column: "ExpertId");
         }
 
         /// <inheritdoc />
@@ -215,6 +243,9 @@ namespace GestionFM1.Read.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "FM1s");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

@@ -9,3 +9,4 @@ C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Shared\o
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Shared\obj\Debug\net8.0\refint\GestionFM1.Shared.dll
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Shared\obj\Debug\net8.0\GestionFM1.Shared.pdb
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Shared\obj\Debug\net8.0\ref\GestionFM1.Shared.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Shared\obj\Debug\net8.0\GestionFM1.Shared.sourcelink.json

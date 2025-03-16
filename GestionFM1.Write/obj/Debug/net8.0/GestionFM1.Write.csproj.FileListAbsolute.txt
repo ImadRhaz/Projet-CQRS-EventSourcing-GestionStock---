@@ -25,3 +25,4 @@ C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Write\ob
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Write\obj\Debug\net8.0\GestionFM1.Write.pdb
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Write\obj\Debug\net8.0\GestionFM1.Write.genruntimeconfig.cache
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Write\obj\Debug\net8.0\ref\GestionFM1.Write.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Write\obj\Debug\net8.0\GestionFM1.Write.sourcelink.json
