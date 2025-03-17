@@ -4,6 +4,7 @@ using GestionFM1.Infrastructure.Messaging;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using GestionFM1.DTOs;
+using System;
 
 namespace GestionFM1.API.Controllers
 {
@@ -51,7 +52,7 @@ namespace GestionFM1.API.Controllers
             }
         }
 
-        [HttpPost("add-fm1")]
+         [HttpPost("add-fm1")]
         public async Task<IActionResult> AddFM1([FromBody] AddFM1DTO addFM1Dto)
         {
             if (!ModelState.IsValid)
@@ -83,5 +84,40 @@ namespace GestionFM1.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        
+        [HttpPost("add-composent")]
+        public async Task<IActionResult> AddComposent([FromBody] AddComposentDTO addComposentDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("ModelState is invalid.");
+                return BadRequest(ModelState);
+            }
+
+            var command = new AddComposentCommand
+            {
+                ItemBaseId = addComposentDto.ItemBaseId,
+                ProductName = addComposentDto.ProductName,
+                SN = addComposentDto.SN,
+                TotalAvailable = addComposentDto.TotalAvailable,
+                UrgentOrNot = addComposentDto.UrgentOrNot,
+                OrderOrNot = addComposentDto.OrderOrNot,
+                FM1Id = addComposentDto.FM1Id
+            };
+
+            try
+            {
+                _logger.LogInformation($"Sending AddComposentCommand for ProductName: {addComposentDto.ProductName}");
+                await _commandBus.SendCommandAsync(command, "gestionfm1.composent.commands");
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error while adding Composent with ProductName: {addComposentDto.ProductName}");
+                return BadRequest(ex.Message);
+            }
+        }
+    
     }
 }

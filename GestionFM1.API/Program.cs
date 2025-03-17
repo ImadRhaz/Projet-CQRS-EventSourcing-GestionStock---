@@ -6,7 +6,7 @@ using GestionFM1.Infrastructure.Messaging;
 using GestionFM1.Read.QueryDataStore;
 using GestionFM1.Read.Repositories;
 using GestionFM1.Write.CommandHandlers;
-using GestionFM1.Read.EventHandlers; 
+using GestionFM1.Read.EventHandlers;
 using GestionFM1.Write.EventStore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -22,20 +22,20 @@ using GestionFM1.Write.Repositories;
 using GestionFM1.Write.CommandConsumer;
 using GestionFM1.Write.Commands;
 using Newtonsoft.Json;
+using GestionFM1.Read.QueryHandlers;
+using System.Collections.Generic;
+using GestionFM1.Read.Queries;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configuration
+// 1. Chargement de la configuration
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
-// 2. Services
-// 2.1 Add controllers
+// 2. Ajout des services
 builder.Services.AddControllers();
-
-// 2.2 Add endpoints API explorer
 builder.Services.AddEndpointsApiExplorer();
 
-// 2.3 Add Swagger
+// 3. Configuration Swagger
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "GestionFM1 API", Version = "v1" });
@@ -59,42 +59,53 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            new string[]{}
         }
     });
 });
 
-// 2.4 Database Configuration
+// 4. Configuration de la base de données
 builder.Services.AddDbContext<QueryDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("QueryDbConnection")));
 
 builder.Services.AddDbContext<EventStoreDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("EventStoreConnection")));
 
-// 2.5 RabbitMQ Configuration
+// 5. Configuration RabbitMQ
 builder.Services.Configure<RabbitMqConfiguration>(builder.Configuration.GetSection("RabbitMqConfiguration"));
-
-// 2.6 Register Dependencies
 builder.Services.AddSingleton<RabbitMqCommandBus>();
 builder.Services.AddSingleton<RabbitMqEventBus>();
 
-// Handlers pour User
+// 6. Injection des dépendances
+// 6.1 Handlers pour User
 builder.Services.AddScoped<ICommandHandler<RegisterUserCommand>, RegisterUserCommandHandler>();
-builder.Services.AddScoped<IEventHandler<UserCreatedEvent>, GestionFM1.Read.EventHandlers.UserCreatedEventHandler>(); // <-- Référence mise à jour
+builder.Services.AddScoped<IEventHandler<UserCreatedEvent>, UserCreatedEventHandler>();
 
-// Repositories
+// 6.2 Handlers pour FM1
+builder.Services.AddScoped<ICommandHandler<AddFM1Command>, AddFM1CommandHandler>();
+builder.Services.AddScoped<IEventHandler<FM1CreatedEvent>, FM1CreatedEventHandler>();
+
+// 6.3 Handlers pour Composent
+builder.Services.AddScoped<ICommandHandler<AddComposentCommand>, AddComposentCommandHandler>();
+builder.Services.AddScoped<IEventHandler<ComposentCreatedEvent>, ComposentCreatedEventHandler>();
+
+// 6.4 Repositories
 builder.Services.AddScoped<IEventStore, EventStore>();
 builder.Services.AddScoped<UserWriteRepository>();
+builder.Services.AddScoped<FM1WriteRepository>(); // Ajouter FM1WriteRepository
+builder.Services.AddScoped<ComposentWriteRepository>();//Ajouter composent Write Repository
 
-// 2.7 Configure Identity
+// 7. Configuration Identity
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<QueryDbContext>()
     .AddDefaultTokenProviders();
 
-// 2.8 Add Hosted Services (Consumers)
+// 8. Ajout des services hébergés (Consumers)
 builder.Services.AddHostedService<RegisterUserCommandConsumer>();
+builder.Services.AddHostedService<AddFM1CommandConsumer>();
+builder.Services.AddHostedService<AddComposentCommandConsumer>();
 
-// 2.9 JWT Configuration
+// 9. Configuration JWT
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -115,12 +126,16 @@ builder.Services.AddAuthentication(x =>
     };
 });
 
-// 2.10 Add Logging
+// 10. Ajout du logging
 builder.Services.AddLogging();
+
+// 11. Ajout des Query Handlers
+builder.Services.AddScoped<LoginQueryHandler>();
+builder.Services.AddScoped<IQueryHandler<GetUserRolesQuery, IList<string>>, GetUserRolesQueryHandler>();
 
 var app = builder.Build();
 
-// 3. Configure HTTP request pipeline
+// 12. Configuration du pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -128,13 +143,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
-// 4. Create roles
+// 13. Création des rôles (Admin, Gestionnaire, Utilisateur)
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -148,11 +161,11 @@ using (var scope = app.Services.CreateScope())
             var roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
             if (roleResult.Succeeded)
             {
-                logger.LogInformation($"Created role: {roleName}");
+                logger.LogInformation($"[Roles] Création du rôle : {roleName}");
             }
             else
             {
-                logger.LogError($"Error creating role: {roleName}");
+                logger.LogError($"[Roles] Erreur lors de la création du rôle : {roleName}");
                 foreach (var error in roleResult.Errors)
                 {
                     logger.LogError(error.Description);
@@ -161,5 +174,62 @@ using (var scope = app.Services.CreateScope())
         }
     }
 }
+
+// 14. Abonnement aux événements RabbitMQ avec gestion des erreurs
+var eventBus = app.Services.GetRequiredService<RabbitMqEventBus>();
+eventBus.Subscribe<FM1CreatedEvent>("gestionfm1.fm1.events", async (message) =>
+{
+    using var scope = app.Services.CreateScope();
+    var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<FM1CreatedEvent>>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        var @event = JsonConvert.DeserializeObject<FM1CreatedEvent>(message);
+        if (@event == null)
+        {
+            logger.LogError("[RabbitMQ] Événement FM1CreatedEvent NULL reçu, impossible de le traiter !");
+            return;
+        }
+
+        logger.LogInformation($"[RabbitMQ] Message FM1CreatedEvent reçu : {@event.FM1Id}");
+
+        await handler.Handle(@event);
+
+        logger.LogInformation($"[RabbitMQ] Message FM1CreatedEvent traité avec succès : {@event.FM1Id}");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError($"[RabbitMQ] Erreur lors du traitement de FM1CreatedEvent : {ex.Message}");
+    }
+});
+
+// Abonnement aux événements RabbitMQ pour ComposentCreatedEvent
+eventBus.Subscribe<ComposentCreatedEvent>("gestionfm1.composent.events", async (message) =>
+{
+    using var scope = app.Services.CreateScope();
+    var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<ComposentCreatedEvent>>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        var @event = JsonConvert.DeserializeObject<ComposentCreatedEvent>(message);
+        if (@event == null)
+        {
+            logger.LogError("[RabbitMQ] Événement ComposentCreatedEvent NULL reçu, impossible de le traiter !");
+            return;
+        }
+
+        logger.LogInformation($"[RabbitMQ] Message ComposentCreatedEvent reçu : {@event.ComposentId}");
+
+        await handler.Handle(@event);
+
+        logger.LogInformation($"[RabbitMQ] Message ComposentCreatedEvent traité avec succès : {@event.ComposentId}");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError($"[RabbitMQ] Erreur lors du traitement de ComposentCreatedEvent : {ex.Message}");
+    }
+});
 
 app.Run();

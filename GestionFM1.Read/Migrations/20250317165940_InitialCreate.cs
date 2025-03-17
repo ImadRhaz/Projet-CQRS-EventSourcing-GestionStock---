@@ -181,6 +181,36 @@ namespace GestionFM1.Read.Migrations
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Composents",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ItemBaseId = table.Column<int>(type: "int", nullable: false),
+                    ProductName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SN = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TotalAvailable = table.Column<int>(type: "int", nullable: false),
+                    UrgentOrNot = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OrderOrNot = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FM1Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FM1Id1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Composents", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Composents_FM1s_FM1Id",
+                        column: x => x.FM1Id,
+                        principalTable: "FM1s",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Composents_FM1s_FM1Id1",
+                        column: x => x.FM1Id1,
+                        principalTable: "FM1s",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -221,6 +251,16 @@ namespace GestionFM1.Read.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Composents_FM1Id",
+                table: "Composents",
+                column: "FM1Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Composents_FM1Id1",
+                table: "Composents",
+                column: "FM1Id1");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_FM1s_ExpertId",
                 table: "FM1s",
                 column: "ExpertId");
@@ -245,10 +285,13 @@ namespace GestionFM1.Read.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "FM1s");
+                name: "Composents");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "FM1s");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

@@ -13,11 +13,13 @@ namespace GestionFM1.API.Controllers
     [ApiController]
     public class QueryController : ControllerBase
     {
+        private readonly LoginQueryHandler _loginQueryHandler;
         private readonly ILogger<QueryController> _logger;
         private readonly IQueryHandler<GetUserRolesQuery, IList<string>> _getUserRolesQueryHandler;
 
         public QueryController(
             IQueryHandler<GetUserRolesQuery, IList<string>> getUserRolesQueryHandler,
+            LoginQueryHandler loginQueryHandler,
             ILogger<QueryController> logger)
         {
             _loginQueryHandler = loginQueryHandler;

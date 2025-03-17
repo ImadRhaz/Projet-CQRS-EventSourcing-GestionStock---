@@ -31,6 +31,14 @@ public class EventStore : IEventStore
         {
             aggregateId = userCreatedEvent.UserId;
         }
+        else if (@event is FM1CreatedEvent fm1CreatedEvent)
+        {
+            aggregateId = fm1CreatedEvent.FM1Id.ToString();
+        }
+        else if (@event is ComposentCreatedEvent composentCreatedEvent)
+        {
+            aggregateId = composentCreatedEvent.ComposentId.ToString();
+        }
         else
         {
             _logger.LogError($"Unsupported event type: {@event.GetType().Name}");
@@ -46,7 +54,7 @@ public class EventStore : IEventStore
             Timestamp = DateTimeOffset.UtcNow
         };
 
-        var eventEntity = new EventEntity  // EventEntity
+        var eventEntity = new EventEntity
         {
             Id = eventToSave.Id,
             AggregateId = eventToSave.AggregateId,
@@ -71,15 +79,15 @@ public class EventStore : IEventStore
     public async Task<IEnumerable<IEvent>> LoadEventsAsync(string aggregateId)
     {
         var events = await _eventStoreDbContext.Events
-           .Where(e => e.AggregateId == aggregateId)
-           .OrderBy(e => e.Timestamp)
-           .ToListAsync();
+            .Where(e => e.AggregateId == aggregateId)
+            .OrderBy(e => e.Timestamp)
+            .ToListAsync();
 
         var eventList = new List<IEvent>();
 
         foreach (var @event in events)
         {
-            Type? eventType = Type.GetType($"GestionFM1.Write.Events.{@event.EventType}, GestionFM1.Write");
+            Type? eventType = Type.GetType($"GestionFM1.Core.Events.{@event.EventType}, GestionFM1.Core");
 
             if (eventType != null)
             {

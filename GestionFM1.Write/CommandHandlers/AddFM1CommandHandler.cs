@@ -28,7 +28,7 @@ namespace GestionFM1.Write.CommandHandlers
         {
             try
             {
-                var fm1Id = Guid.NewGuid();
+                var fm1Id = Guid.NewGuid(); // Générer un nouvel ID Guid
 
                 var fm1CreatedEvent = new FM1CreatedEvent
                 {
@@ -46,14 +46,14 @@ namespace GestionFM1.Write.CommandHandlers
                 await _eventStore.SaveEventAsync(fm1CreatedEvent);
 
                 // Publier l'événement dans l'exchange dédié
-                await _eventBus.PublishEventAsync(fm1CreatedEvent, "gestionFM1.fm1.events");
+                await _eventBus.PublishEventAsync(fm1CreatedEvent, "gestionfm1.fm1.events");
 
                 _logger.LogInformation($"FM1 créé avec l'ID : {fm1Id}");
-                _logger.LogInformation($"Événement publié via RabbitMQ pour FM1 : {fm1Id}");
+                _logger.LogInformation($"Événement publié via RabbitMQ pour le FM1 : {fm1Id}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Erreur lors de la création de FM1.");
+                _logger.LogError(ex, $"Erreur lors de la création du FM1.");
                 throw;
             }
         }

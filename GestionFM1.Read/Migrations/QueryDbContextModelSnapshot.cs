@@ -22,9 +22,50 @@ namespace GestionFM1.Read.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("GestionFM1.Core.Models.Composent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("FM1Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("FM1Id1")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ItemBaseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OrderOrNot")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SN")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TotalAvailable")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UrgentOrNot")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FM1Id");
+
+                    b.HasIndex("FM1Id1");
+
+                    b.ToTable("Composents", (string)null);
+                });
+
             modelBuilder.Entity("GestionFM1.Core.Models.FM1", b =>
                 {
-                    b.Property<Guid?>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -266,10 +307,25 @@ namespace GestionFM1.Read.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("GestionFM1.Core.Models.Composent", b =>
+                {
+                    b.HasOne("GestionFM1.Core.Models.FM1", "FM1")
+                        .WithMany()
+                        .HasForeignKey("FM1Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GestionFM1.Core.Models.FM1", null)
+                        .WithMany("Composents")
+                        .HasForeignKey("FM1Id1");
+
+                    b.Navigation("FM1");
+                });
+
             modelBuilder.Entity("GestionFM1.Core.Models.FM1", b =>
                 {
                     b.HasOne("GestionFM1.Core.Models.User", "Expert")
-                        .WithMany()
+                        .WithMany("FM1s")
                         .HasForeignKey("ExpertId");
 
                     b.Navigation("Expert");
@@ -324,6 +380,16 @@ namespace GestionFM1.Read.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("GestionFM1.Core.Models.FM1", b =>
+                {
+                    b.Navigation("Composents");
+                });
+
+            modelBuilder.Entity("GestionFM1.Core.Models.User", b =>
+                {
+                    b.Navigation("FM1s");
                 });
 #pragma warning restore 612, 618
         }

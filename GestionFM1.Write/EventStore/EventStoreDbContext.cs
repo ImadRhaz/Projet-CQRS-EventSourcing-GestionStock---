@@ -16,3 +16,4 @@ public class EventStoreDbContext : DbContext
             .HasKey(e => e.Id);
     }
 }
+

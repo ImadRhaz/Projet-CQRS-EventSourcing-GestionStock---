@@ -19,7 +19,7 @@ namespace GestionFM1.Write.CommandConsumer
     {
         private readonly IConnection _connection;
         private readonly IModel _channel;
-        private readonly string _queueName = "gestionFM1.fm1.commands";
+        private readonly string _queueName = "gestionfm1.fm1.commands";
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<AddFM1CommandConsumer> _logger;
         private bool _disposed = false;
