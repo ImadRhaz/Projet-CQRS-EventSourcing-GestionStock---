@@ -89,11 +89,16 @@ builder.Services.AddScoped<IEventHandler<FM1CreatedEvent>, FM1CreatedEventHandle
 builder.Services.AddScoped<ICommandHandler<AddComposentCommand>, AddComposentCommandHandler>();
 builder.Services.AddScoped<IEventHandler<ComposentCreatedEvent>, ComposentCreatedEventHandler>();
 
-// 6.4 Repositories
+// 6.4 Handlers pour Commande (Ajout des services pour Commande)
+builder.Services.AddScoped<ICommandHandler<CommandeAddCommand>, CommandeAddCommandHandler>();
+builder.Services.AddScoped<IEventHandler<CommandeCreatedEvent>, CommandeCreatedEventHandler>();
+
+// 6.5 Repositories
 builder.Services.AddScoped<IEventStore, EventStore>();
 builder.Services.AddScoped<UserWriteRepository>();
-builder.Services.AddScoped<FM1WriteRepository>(); // Ajouter FM1WriteRepository
-builder.Services.AddScoped<ComposentWriteRepository>();//Ajouter composent Write Repository
+builder.Services.AddScoped<FM1WriteRepository>();
+builder.Services.AddScoped<ComposentWriteRepository>();
+builder.Services.AddScoped<CommandeWriteRepository>(); // Ajout de CommandeWriteRepository
 
 // 7. Configuration Identity
 builder.Services.AddIdentity<User, IdentityRole>()
@@ -104,6 +109,7 @@ builder.Services.AddIdentity<User, IdentityRole>()
 builder.Services.AddHostedService<RegisterUserCommandConsumer>();
 builder.Services.AddHostedService<AddFM1CommandConsumer>();
 builder.Services.AddHostedService<AddComposentCommandConsumer>();
+builder.Services.AddHostedService<CommandeAddCommandConsumer>(); // Ajout de CommandeAddCommandConsumer
 
 // 9. Configuration JWT
 builder.Services.AddAuthentication(x =>
@@ -229,6 +235,34 @@ eventBus.Subscribe<ComposentCreatedEvent>("gestionfm1.composent.events", async (
     catch (Exception ex)
     {
         logger.LogError($"[RabbitMQ] Erreur lors du traitement de ComposentCreatedEvent : {ex.Message}");
+    }
+});
+
+// 15. Abonnement aux événements RabbitMQ pour CommandeCreatedEvent (Ajout de l'abonnement pour Commande)
+eventBus.Subscribe<CommandeCreatedEvent>("gestionfm1.commande.events", async (message) =>
+{
+    using var scope = app.Services.CreateScope();
+    var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<CommandeCreatedEvent>>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        var @event = JsonConvert.DeserializeObject<CommandeCreatedEvent>(message);
+        if (@event == null)
+        {
+            logger.LogError("[RabbitMQ] Événement CommandeCreatedEvent NULL reçu, impossible de le traiter !");
+            return;
+        }
+
+        logger.LogInformation($"[RabbitMQ] Message CommandeCreatedEvent reçu : {@event.CommandeId}");
+
+        await handler.Handle(@event);
+
+        logger.LogInformation($"[RabbitMQ] Message CommandeCreatedEvent traité avec succès : {@event.CommandeId}");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError($"[RabbitMQ] Erreur lors du traitement de CommandeCreatedEvent : {ex.Message}");
     }
 });
 

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GestionFM1.Write")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ba26c694ab6e3bc67db6fddfa563bcc04f235fff")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cab57ba219fd349761080fa3d9a1a907697bd16a")]
 [assembly: System.Reflection.AssemblyProductAttribute("GestionFM1.Write")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GestionFM1.Write")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

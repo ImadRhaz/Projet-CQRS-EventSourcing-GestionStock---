@@ -15,9 +15,14 @@ namespace GestionFM1.Core.Models
         public DateTime? DateEntre { get; set; }
         public DateTime? ExpirationVerification { get; set; }
         public string Status { get; set; } = string.Empty;
-        public User? Expert { get; set; }
-        public string? ExpertId { get; set; }
 
+        // Clé étrangère vers l'expert (User)
+        public string? ExpertId { get; set; }
+        [ForeignKey("ExpertId")]
+        public User? Expert { get; set; }
+
+        // Relation One-to-Many : Un FM1 peut avoir plusieurs Composents
         public List<Composent> Composents { get; set; } = new List<Composent>();
+        public List<Commande> Commandes { get; set; } = new List<Commande>(); // Relation avec Commandes
     }
 }

@@ -118,6 +118,37 @@ namespace GestionFM1.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
-    
+
+        [HttpPost("add-commande")]
+        public async Task<IActionResult> AddCommande([FromBody] CommandeAddDTO commandeAddDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("ModelState is invalid.");
+                return BadRequest(ModelState);
+            }
+
+            var command = new CommandeAddCommand
+            {
+                EtatCommande = commandeAddDTO.EtatCommande,
+                DateCmd = commandeAddDTO.DateCmd,
+                ComposentId = commandeAddDTO.ComposentId,
+                ExpertId = commandeAddDTO.ExpertId,
+                RaisonDeCommande = commandeAddDTO.RaisonDeCommande,
+                FM1Id = commandeAddDTO.FM1Id
+            };
+
+            try
+            {
+                _logger.LogInformation($"Sending AddCommandeCommand for ComposentId: {commandeAddDTO.ComposentId}");
+                await _commandBus.SendCommandAsync(command, "gestionfm1.commande.commands");
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error while adding Commande for ComposentId: {commandeAddDTO.ComposentId}");
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

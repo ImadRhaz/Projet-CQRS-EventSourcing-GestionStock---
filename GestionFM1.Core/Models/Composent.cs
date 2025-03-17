@@ -21,9 +21,11 @@ namespace GestionFM1.Core.Models
 
         public string? OrderOrNot { get; set; }
 
-        [ForeignKey("FM1")]
-        public Guid FM1Id { get; set; } // Clé étrangère vers FM1
-
+        // Clé étrangère vers FM1
+        public Guid FM1Id { get; set; }
+        [ForeignKey("FM1Id")]
         public FM1 FM1 { get; set; } = null!; // Propriété de navigation
-    }
-}
+        // Clé étrangère vers Composent
+         // Relation One-to-One : Un Composant a une Commande (nullable)
+        public Commande? Commande { get; set; }
+}}

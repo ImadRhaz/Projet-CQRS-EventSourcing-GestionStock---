@@ -39,6 +39,10 @@ public class EventStore : IEventStore
         {
             aggregateId = composentCreatedEvent.ComposentId.ToString();
         }
+        else if (@event is CommandeCreatedEvent commandeCreatedEvent)
+        {
+            aggregateId = commandeCreatedEvent.ComposentId.ToString(); // Utiliser ComposentId
+        }
         else
         {
             _logger.LogError($"Unsupported event type: {@event.GetType().Name}");
