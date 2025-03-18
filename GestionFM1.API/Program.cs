@@ -145,6 +145,27 @@ builder.Services.AddLogging();
 builder.Services.AddScoped<LoginQueryHandler>();
 builder.Services.AddScoped<IQueryHandler<GetUserRolesQuery, IList<string>>, GetUserRolesQueryHandler>();
 
+// 11.1 Ajout des Query Handlers pour FM1
+builder.Services.AddScoped<IQueryHandler<GetAllFM1Query, IEnumerable<FM1>>, GetAllFM1QueryHandler>();
+builder.Services.AddScoped<IQueryHandler<GetFM1ByIdQuery, FM1>, GetFM1ByIdQueryHandler>();
+
+// 11.2 Ajout des Query Handlers pour Composent
+builder.Services.AddScoped<IQueryHandler<GetAllComposentsQuery, IEnumerable<Composent>>, GetAllComposentsQueryHandler>();
+builder.Services.AddScoped<IQueryHandler<GetComposentByIdQuery, Composent>, GetComposentByIdQueryHandler>();
+
+// 11.3 Ajout des Query Handlers pour Commande
+builder.Services.AddScoped<IQueryHandler<GetAllCommandesQuery, IEnumerable<Commande>>, GetAllCommandesQueryHandler>();
+builder.Services.AddScoped<IQueryHandler<GetCommandeByIdQuery, Commande>, GetCommandeByIdQueryHandler>();
+
+// 11.4 Ajout des Query Handlers pour FM1History
+builder.Services.AddScoped<IQueryHandler<GetAllFM1HistoriesQuery, IEnumerable<FM1History>>, GetAllFM1HistoriesQueryHandler>();
+
+//11.5 Ajout des Repositories Read
+builder.Services.AddScoped<IFM1ReadRepository, FM1ReadRepository>();
+builder.Services.AddScoped<IComposentReadRepository, ComposentReadRepository>();
+builder.Services.AddScoped<ICommandeReadRepository, CommandeReadRepository>();
+builder.Services.AddScoped<IFM1HistoryReadRepository, FM1HistoryReadRepository>();
+
 var app = builder.Build();
 
 // 12. Configuration du pipeline HTTP
