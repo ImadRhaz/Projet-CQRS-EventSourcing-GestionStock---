@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GestionFM1.Read.Migrations
 {
     [DbContext(typeof(QueryDbContext))]
-    [Migration("20250317231750_InitialCreate")]
+    [Migration("20250318151000_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -47,6 +47,9 @@ namespace GestionFM1.Read.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<Guid?>("FM1HistoryId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("FM1Id")
                         .HasColumnType("uniqueidentifier");
 
@@ -56,10 +59,9 @@ namespace GestionFM1.Read.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ComposentId")
-                        .IsUnique();
-
                     b.HasIndex("ExpertId");
+
+                    b.HasIndex("FM1HistoryId");
 
                     b.HasIndex("FM1Id");
 
@@ -71,6 +73,9 @@ namespace GestionFM1.Read.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("CommandeId")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("FM1Id")
                         .HasColumnType("uniqueidentifier");
@@ -96,6 +101,10 @@ namespace GestionFM1.Read.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CommandeId")
+                        .IsUnique()
+                        .HasFilter("[CommandeId] IS NOT NULL");
 
                     b.HasIndex("FM1Id");
 
@@ -125,6 +134,9 @@ namespace GestionFM1.Read.Migrations
                     b.Property<DateTime?>("ExpirationVerification")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid?>("FM1HistoryId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("PsSn")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -138,6 +150,24 @@ namespace GestionFM1.Read.Migrations
                     b.HasIndex("ExpertId");
 
                     b.ToTable("FM1s", (string)null);
+                });
+
+            modelBuilder.Entity("GestionFM1.Core.Models.FM1History", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("FM1Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FM1Id")
+                        .IsUnique()
+                        .HasFilter("[FM1Id] IS NOT NULL");
+
+                    b.ToTable("FM1Histories", (string)null);
                 });
 
             modelBuilder.Entity("GestionFM1.Core.Models.User", b =>
@@ -348,17 +378,16 @@ namespace GestionFM1.Read.Migrations
 
             modelBuilder.Entity("GestionFM1.Core.Models.Commande", b =>
                 {
-                    b.HasOne("GestionFM1.Core.Models.Composent", "Composent")
-                        .WithOne("Commande")
-                        .HasForeignKey("GestionFM1.Core.Models.Commande", "ComposentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("GestionFM1.Core.Models.User", "Expert")
                         .WithMany("Commandes")
                         .HasForeignKey("ExpertId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("GestionFM1.Core.Models.FM1History", "FM1History")
+                        .WithMany("Commandes")
+                        .HasForeignKey("FM1HistoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("GestionFM1.Core.Models.FM1", "FM1")
                         .WithMany("Commandes")
@@ -366,20 +395,27 @@ namespace GestionFM1.Read.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Composent");
-
                     b.Navigation("Expert");
 
                     b.Navigation("FM1");
+
+                    b.Navigation("FM1History");
                 });
 
             modelBuilder.Entity("GestionFM1.Core.Models.Composent", b =>
                 {
+                    b.HasOne("GestionFM1.Core.Models.Commande", "Commande")
+                        .WithOne("Composent")
+                        .HasForeignKey("GestionFM1.Core.Models.Composent", "CommandeId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("GestionFM1.Core.Models.FM1", "FM1")
                         .WithMany("Composents")
                         .HasForeignKey("FM1Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Commande");
 
                     b.Navigation("FM1");
                 });
@@ -392,6 +428,16 @@ namespace GestionFM1.Read.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Expert");
+                });
+
+            modelBuilder.Entity("GestionFM1.Core.Models.FM1History", b =>
+                {
+                    b.HasOne("GestionFM1.Core.Models.FM1", "FM1")
+                        .WithOne("FM1History")
+                        .HasForeignKey("GestionFM1.Core.Models.FM1History", "FM1Id")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("FM1");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -445,9 +491,10 @@ namespace GestionFM1.Read.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("GestionFM1.Core.Models.Composent", b =>
+            modelBuilder.Entity("GestionFM1.Core.Models.Commande", b =>
                 {
-                    b.Navigation("Commande");
+                    b.Navigation("Composent")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("GestionFM1.Core.Models.FM1", b =>
@@ -455,6 +502,13 @@ namespace GestionFM1.Read.Migrations
                     b.Navigation("Commandes");
 
                     b.Navigation("Composents");
+
+                    b.Navigation("FM1History");
+                });
+
+            modelBuilder.Entity("GestionFM1.Core.Models.FM1History", b =>
+                {
+                    b.Navigation("Commandes");
                 });
 
             modelBuilder.Entity("GestionFM1.Core.Models.User", b =>

@@ -1,4 +1,3 @@
-// CommandeAggregate.cs
 using GestionFM1.Core.Events;
 using GestionFM1.Core.Interfaces;
 using System;
@@ -9,7 +8,6 @@ namespace GestionFM1.Write.Aggregates
 {
     public class CommandeAggregate
     {
-        //Pas de CommandeId ici !  C'est l'Event Handler qui s'en occupe
         public string EtatCommande { get; private set; } = string.Empty;
         public DateTime DateCmd { get; private set; }
         public Guid ComposentId { get; private set; }
@@ -29,7 +27,8 @@ namespace GestionFM1.Write.Aggregates
             Guid composentId,
             string expertId,
             string raisonDeCommande,
-            Guid fm1Id)
+            Guid fm1Id
+            )
         {
             Apply(new CommandeCreatedEvent
             {
@@ -45,32 +44,34 @@ namespace GestionFM1.Write.Aggregates
         internal void Apply(IEvent @event)
         {
             _changes.Add(@event);
-           When(@event);
+            When(@event);
         }
 
         public IEnumerable<IEvent> GetChanges()
         {
             return _changes;
         }
-         public void Load(IEnumerable<IEvent> history)
+
+        public void Load(IEnumerable<IEvent> history)
         {
             foreach (var @event in history)
             {
                 When(@event);
             }
         }
-         private void When(IEvent @event)
+
+        private void When(IEvent @event)
         {
             switch (@event)
             {
                 case CommandeCreatedEvent e:
-                ComposentId = e.ComposentId;
-                EtatCommande = e.EtatCommande;
-                DateCmd = e.DateCmd;
-                ExpertId = e.ExpertId;
-                RaisonDeCommande = e.RaisonDeCommande;
-                FM1Id = e.FM1Id;
-                  break;
+                    ComposentId = e.ComposentId;
+                    EtatCommande = e.EtatCommande;
+                    DateCmd = e.DateCmd;
+                    ExpertId = e.ExpertId;
+                    RaisonDeCommande = e.RaisonDeCommande;
+                    FM1Id = e.FM1Id;
+                    break;
             }
         }
     }

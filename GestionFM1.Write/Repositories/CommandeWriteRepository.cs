@@ -1,10 +1,9 @@
-// CommandeWriteRepository.cs
 using GestionFM1.Write.Commands;
 using GestionFM1.Write.Aggregates;
 using GestionFM1.Write.EventStore;
+using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using GestionFM1.Core.Interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace GestionFM1.Write.Repositories
 {
@@ -44,7 +43,6 @@ namespace GestionFM1.Write.Repositories
                 _logger.LogError(ex, "Erreur lors de l'ajout de la commande à l'EventStore");
                 throw;
             }
-
         }
     }
 }

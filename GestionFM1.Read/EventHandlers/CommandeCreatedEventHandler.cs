@@ -1,11 +1,11 @@
 using GestionFM1.Core.Events;
+using GestionFM1.Core.Interfaces;
 using GestionFM1.Read.QueryDataStore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using GestionFM1.Core.Models;
-using GestionFM1.Core.Interfaces;
 
 namespace GestionFM1.Read.EventHandlers
 {
@@ -18,63 +18,65 @@ namespace GestionFM1.Read.EventHandlers
         {
             _queryDbContext = queryDbContext;
             _logger = logger;
-
-            _logger.LogInformation("✅ CommandeCreatedEventHandler initialisé et prêt à écouter les événements.");
         }
 
         public async Task Handle(CommandeCreatedEvent @event)
         {
             _logger.LogInformation($"🔄 Début du traitement de CommandeCreatedEvent pour l'ID : {@event.CommandeId}");
 
-            bool canConnect = _queryDbContext.Database.CanConnect();
-            _logger.LogDebug($"🔍 Vérification de la connexion à la base de lecture : {canConnect}");
-
-            if (!canConnect)
-            {
-                _logger.LogError("❌ Impossible de se connecter à la base de lecture !");
-                return;
-            }
-
             try
             {
-                _logger.LogDebug($"Données de l'événement : EtatCommande={@event.EtatCommande}, DateCmd={@event.DateCmd}, ComposentId={@event.ComposentId}, ExpertId={@event.ExpertId}, RaisonDeCommande={@event.RaisonDeCommande}, FM1Id={@event.FM1Id}");
+                Guid? fm1HistoryId = null;
+
+                // Vérifier si un FM1History existe déjà pour cet FM1
+                var existingFM1History = await _queryDbContext.FM1Histories
+                    .FirstOrDefaultAsync(vh => vh.FM1Id == @event.FM1Id);
+
+                if (existingFM1History == null)
+                {
+                    _logger.LogInformation($"Création d'un nouveau FM1History pour FM1Id : {@event.FM1Id}");
+
+                    // Créer un nouvel FM1History
+                    var newFM1History = new FM1History
+                    {
+                        Id = Guid.NewGuid(),
+                        FM1Id = @event.FM1Id
+                    };
+
+                    _queryDbContext.FM1Histories.Add(newFM1History);
+                    await _queryDbContext.SaveChangesAsync();
+
+                    fm1HistoryId = newFM1History.Id; // Récupérer l'ID du nouvel FM1History
+                }
+                else
+                {
+                    fm1HistoryId = existingFM1History.Id; // Utiliser l'ID de l'FM1History existant
+                }
 
                 var commande = new Commande
                 {
-                    Id = @event.CommandeId,  // Récupérer l'ID auto-incrémenté
+                    Id = @event.CommandeId,
                     EtatCommande = @event.EtatCommande,
                     DateCmd = @event.DateCmd,
                     ComposentId = @event.ComposentId,
                     ExpertId = @event.ExpertId,
                     RaisonDeCommande = @event.RaisonDeCommande,
-                    FM1Id = @event.FM1Id
+                    FM1Id = @event.FM1Id,
+                    FM1HistoryId = fm1HistoryId // Associer la commande à l'historique
                 };
 
-                _logger.LogDebug($"📌 Objet Commande créé : {System.Text.Json.JsonSerializer.Serialize(commande)}");
-
-                _logger.LogDebug("📌 Avant d'ajouter Commande au contexte de la base de données.");
-                _queryDbContext.Set<Commande>().Add(commande); // Use Set<Commande>()
-                _logger.LogDebug("📌 Après avoir ajouté Commande au contexte de la base de données.");
-
-                _logger.LogDebug("💾 Avant d'enregistrer les modifications dans la base de données.");
+                _queryDbContext.Commandes.Add(commande);
                 await _queryDbContext.SaveChangesAsync();
-                _logger.LogDebug("✅ Après avoir enregistré les modifications dans la base de données.");
 
-                // Now, retrieve the auto-incremented ID
-                @event.CommandeId = commande.Id; // update the event with the id
-                _logger.LogInformation($"✅ Commande ajouté à la base de données de lecture avec l'ID : {@event.CommandeId}");
+                _logger.LogInformation($"Commande ajoutée à la base de données de lecture avec l'ID : {@event.CommandeId}, associée à FM1HistoryId : {fm1HistoryId}");
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, $"❌ Erreur lors de la mise à jour de la base de données pour l'ID : {@event.CommandeId}");
-                if (ex.InnerException != null)
-                {
-                    _logger.LogError(ex.InnerException, "❌ Inner Exception de DbUpdateException");
-                }
+                _logger.LogError(ex, "Erreur lors de la mise à jour de la base de données.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"❌ Erreur inattendue lors du traitement de l'événement CommandeCreatedEvent pour l'ID : {@event.CommandeId}");
+                _logger.LogError(ex, "Erreur lors du traitement de l'événement CommandeCreatedEvent.");
             }
 
             _logger.LogInformation($"🏁 Fin du traitement de l'événement CommandeCreatedEvent pour l'ID : {@event.CommandeId}");

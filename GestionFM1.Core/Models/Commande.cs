@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GestionFM1.Core.Models
 {
-    public class Commande
+     public class Commande
     {
         [Key]
         public int Id { get; set; }
@@ -27,5 +27,11 @@ namespace GestionFM1.Core.Models
         public Guid FM1Id { get; set; }
         [ForeignKey("FM1Id")]
         public FM1 FM1 { get; set; } = null!;  // FM1 auquel la commande est associée
+
+        // Clé étrangère vers FM1History (nullable car une commande peut exister sans être liée à un historique)
+        public Guid? FM1HistoryId { get; set; }
+        [ForeignKey("FM1HistoryId")]
+        public FM1History? FM1History { get; set; } // L'historique FM1 auquel la commande est liée (si applicable)
+
     }
 }

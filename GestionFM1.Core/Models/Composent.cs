@@ -25,7 +25,10 @@ namespace GestionFM1.Core.Models
         public Guid FM1Id { get; set; }
         [ForeignKey("FM1Id")]
         public FM1 FM1 { get; set; } = null!; // Propriété de navigation
-        // Clé étrangère vers Composent
-         // Relation One-to-One : Un Composant a une Commande (nullable)
+
+        // Clé étrangère vers Commande
+        public int? CommandeId { get; set; }  // Clé étrangère nullable (un composant peut ne pas avoir de commande)
+        [ForeignKey("CommandeId")]
         public Commande? Commande { get; set; }
-}}
+    }
+}

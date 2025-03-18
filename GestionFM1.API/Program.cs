@@ -93,12 +93,17 @@ builder.Services.AddScoped<IEventHandler<ComposentCreatedEvent>, ComposentCreate
 builder.Services.AddScoped<ICommandHandler<CommandeAddCommand>, CommandeAddCommandHandler>();
 builder.Services.AddScoped<IEventHandler<CommandeCreatedEvent>, CommandeCreatedEventHandler>();
 
-// 6.5 Repositories
+// 6.5 Handlers pour FM1History
+builder.Services.AddScoped<ICommandHandler<AddFM1HistoryCommand>, AddFM1HistoryCommandHandler>();
+builder.Services.AddScoped<IEventHandler<FM1HistoryCreatedEvent>, FM1HistoryCreatedEventHandler>();
+
+// 6.6 Repositories
 builder.Services.AddScoped<IEventStore, EventStore>();
 builder.Services.AddScoped<UserWriteRepository>();
 builder.Services.AddScoped<FM1WriteRepository>();
 builder.Services.AddScoped<ComposentWriteRepository>();
 builder.Services.AddScoped<CommandeWriteRepository>(); // Ajout de CommandeWriteRepository
+builder.Services.AddScoped<FM1HistoryWriteRepository>();
 
 // 7. Configuration Identity
 builder.Services.AddIdentity<User, IdentityRole>()
@@ -110,6 +115,7 @@ builder.Services.AddHostedService<RegisterUserCommandConsumer>();
 builder.Services.AddHostedService<AddFM1CommandConsumer>();
 builder.Services.AddHostedService<AddComposentCommandConsumer>();
 builder.Services.AddHostedService<CommandeAddCommandConsumer>(); // Ajout de CommandeAddCommandConsumer
+builder.Services.AddHostedService<AddFM1HistoryCommandConsumer>();
 
 // 9. Configuration JWT
 builder.Services.AddAuthentication(x =>
@@ -263,6 +269,34 @@ eventBus.Subscribe<CommandeCreatedEvent>("gestionfm1.commande.events", async (me
     catch (Exception ex)
     {
         logger.LogError($"[RabbitMQ] Erreur lors du traitement de CommandeCreatedEvent : {ex.Message}");
+    }
+});
+
+// 16. Abonnement aux événements RabbitMQ pour FM1HistoryCreatedEvent
+eventBus.Subscribe<FM1HistoryCreatedEvent>("gestionfm1.fm1history.events", async (message) =>
+{
+    using var scope = app.Services.CreateScope();
+    var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<FM1HistoryCreatedEvent>>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        var @event = JsonConvert.DeserializeObject<FM1HistoryCreatedEvent>(message);
+        if (@event == null)
+        {
+            logger.LogError("[RabbitMQ] Événement FM1HistoryCreatedEvent NULL reçu, impossible de le traiter !");
+            return;
+        }
+
+        logger.LogInformation($"[RabbitMQ] Message FM1HistoryCreatedEvent reçu : {@event.FM1HistoryId}");
+
+        await handler.Handle(@event);
+
+        logger.LogInformation($"[RabbitMQ] Message FM1HistoryCreatedEvent traité avec succès : {@event.FM1HistoryId}");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError($"[RabbitMQ] Erreur lors du traitement de FM1HistoryCreatedEvent : {ex.Message}");
     }
 });
 

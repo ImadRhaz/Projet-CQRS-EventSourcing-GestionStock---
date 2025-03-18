@@ -1,4 +1,3 @@
-// CommandeAddCommandHandler.cs
 using GestionFM1.Core.Events;
 using GestionFM1.Core.Interfaces;
 using GestionFM1.Infrastructure.Messaging;
@@ -30,7 +29,6 @@ namespace GestionFM1.Write.CommandHandlers
         {
             try
             {
-                //  l'Aggregate crée l'événement
                 var aggregate = new CommandeAggregate();
                 aggregate.AddCommande(
                     command.EtatCommande,
@@ -41,16 +39,14 @@ namespace GestionFM1.Write.CommandHandlers
                     command.FM1Id
                 );
 
-                // Récupérer l'événement créé par l'Aggregate
-                var @event = (CommandeCreatedEvent)aggregate.GetChanges().Single(); // On est sûr qu'il n'y a qu'un seul événement
+                foreach (var @event in aggregate.GetChanges())
+                {
+                    await _eventStore.SaveEventAsync(@event);
+                    await _eventBus.PublishEventAsync(@event, "gestionfm1.commande.events");
+                    _logger.LogInformation($"Commande créée et événement publié via RabbitMQ.");
+                }
 
-                // Enregistrer l'événement dans l'Event Store
-                await _eventStore.SaveEventAsync(@event);
 
-                // Publier l'événement dans l'exchange dédié
-                await _eventBus.PublishEventAsync(@event, "gestionfm1.commande.events");
-
-                _logger.LogInformation($"Commande créée et événement publié via RabbitMQ.");
             }
             catch (Exception ex)
             {

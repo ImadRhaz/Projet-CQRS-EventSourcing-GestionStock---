@@ -169,7 +169,8 @@ namespace GestionFM1.Read.Migrations
                     DateEntre = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ExpirationVerification = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExpertId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    ExpertId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    FM1HistoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -183,23 +184,17 @@ namespace GestionFM1.Read.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Composents",
+                name: "FM1Histories",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ItemBaseId = table.Column<int>(type: "int", nullable: false),
-                    ProductName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SN = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TotalAvailable = table.Column<int>(type: "int", nullable: false),
-                    UrgentOrNot = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OrderOrNot = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    FM1Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    FM1Id = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Composents", x => x.Id);
+                    table.PrimaryKey("PK_FM1Histories", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Composents_FM1s_FM1Id",
+                        name: "FK_FM1Histories_FM1s_FM1Id",
                         column: x => x.FM1Id,
                         principalTable: "FM1s",
                         principalColumn: "Id",
@@ -217,7 +212,8 @@ namespace GestionFM1.Read.Migrations
                     ComposentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ExpertId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     RaisonDeCommande = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FM1Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    FM1Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FM1HistoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -229,16 +225,47 @@ namespace GestionFM1.Read.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Commandes_Composents_ComposentId",
-                        column: x => x.ComposentId,
-                        principalTable: "Composents",
+                        name: "FK_Commandes_FM1Histories_FM1HistoryId",
+                        column: x => x.FM1HistoryId,
+                        principalTable: "FM1Histories",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Commandes_FM1s_FM1Id",
                         column: x => x.FM1Id,
                         principalTable: "FM1s",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Composents",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ItemBaseId = table.Column<int>(type: "int", nullable: false),
+                    ProductName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SN = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TotalAvailable = table.Column<int>(type: "int", nullable: false),
+                    UrgentOrNot = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OrderOrNot = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FM1Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CommandeId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Composents", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Composents_Commandes_CommandeId",
+                        column: x => x.CommandeId,
+                        principalTable: "Commandes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Composents_FM1s_FM1Id",
+                        column: x => x.FM1Id,
+                        principalTable: "FM1s",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -281,15 +308,14 @@ namespace GestionFM1.Read.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Commandes_ComposentId",
-                table: "Commandes",
-                column: "ComposentId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Commandes_ExpertId",
                 table: "Commandes",
                 column: "ExpertId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Commandes_FM1HistoryId",
+                table: "Commandes",
+                column: "FM1HistoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Commandes_FM1Id",
@@ -297,9 +323,23 @@ namespace GestionFM1.Read.Migrations
                 column: "FM1Id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Composents_CommandeId",
+                table: "Composents",
+                column: "CommandeId",
+                unique: true,
+                filter: "[CommandeId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Composents_FM1Id",
                 table: "Composents",
                 column: "FM1Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FM1Histories_FM1Id",
+                table: "FM1Histories",
+                column: "FM1Id",
+                unique: true,
+                filter: "[FM1Id] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FM1s_ExpertId",
@@ -326,13 +366,16 @@ namespace GestionFM1.Read.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Commandes");
+                name: "Composents");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Composents");
+                name: "Commandes");
+
+            migrationBuilder.DropTable(
+                name: "FM1Histories");
 
             migrationBuilder.DropTable(
                 name: "FM1s");

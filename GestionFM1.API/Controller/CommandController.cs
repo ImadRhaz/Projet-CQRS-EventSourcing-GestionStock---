@@ -85,7 +85,7 @@ namespace GestionFM1.API.Controllers
             }
         }
 
-        
+
         [HttpPost("add-composent")]
         public async Task<IActionResult> AddComposent([FromBody] AddComposentDTO addComposentDto)
         {
@@ -119,7 +119,7 @@ namespace GestionFM1.API.Controllers
             }
         }
 
-        [HttpPost("add-commande")]
+      [HttpPost("add-commande")]
         public async Task<IActionResult> AddCommande([FromBody] CommandeAddDTO commandeAddDTO)
         {
             if (!ModelState.IsValid)
@@ -140,13 +140,39 @@ namespace GestionFM1.API.Controllers
 
             try
             {
-                _logger.LogInformation($"Sending AddCommandeCommand for ComposentId: {commandeAddDTO.ComposentId}");
+                _logger.LogInformation($"Sending CommandeAddCommand for ComposentId: {commandeAddDTO.ComposentId}");
                 await _commandBus.SendCommandAsync(command, "gestionfm1.commande.commands");
                 return Ok();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error while adding Commande for ComposentId: {commandeAddDTO.ComposentId}");
+                return BadRequest(ex.Message);
+            }
+        }
+            [HttpPost("add-fm1history")]
+        public async Task<IActionResult> AddFM1History([FromBody] AddFM1HistoryDTO addFM1HistoryDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("ModelState is invalid.");
+                return BadRequest(ModelState);
+            }
+
+            var command = new AddFM1HistoryCommand
+            {
+                FM1Id = addFM1HistoryDto.FM1Id
+            };
+
+            try
+            {
+                _logger.LogInformation($"Sending AddFM1HistoryCommand for FM1Id: {addFM1HistoryDto.FM1Id}");
+                await _commandBus.SendCommandAsync(command, "gestionfm1.fm1history.commands");
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error while adding FM1History for FM1Id: {addFM1HistoryDto.FM1Id}");
                 return BadRequest(ex.Message);
             }
         }

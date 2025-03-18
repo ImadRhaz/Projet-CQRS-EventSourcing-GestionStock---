@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GestionFM1.DTOs")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cab57ba219fd349761080fa3d9a1a907697bd16a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2052e0160847a54b914b9f65a0536d42047b08fe")]
 [assembly: System.Reflection.AssemblyProductAttribute("GestionFM1.DTOs")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GestionFM1.DTOs")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

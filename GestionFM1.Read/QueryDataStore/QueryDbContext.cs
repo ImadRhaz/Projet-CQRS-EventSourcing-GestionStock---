@@ -9,6 +9,7 @@ namespace GestionFM1.Read.QueryDataStore
         public DbSet<FM1> FM1s { get; set; }
         public DbSet<Composent> Composents { get; set; }
         public DbSet<Commande> Commandes { get; set; }
+        public DbSet<FM1History> FM1Histories { get; set; } // Ajout du DbSet pour FM1History
 
         public QueryDbContext(DbContextOptions<QueryDbContext> options) : base(options)
         {
@@ -21,6 +22,7 @@ namespace GestionFM1.Read.QueryDataStore
             modelBuilder.Entity<FM1>().ToTable("FM1s");
             modelBuilder.Entity<Composent>().ToTable("Composents");
             modelBuilder.Entity<Commande>().ToTable("Commandes");
+            modelBuilder.Entity<FM1History>().ToTable("FM1Histories"); // Ajout de la table FM1Histories
 
             // Configuration explicite de la propriété Id pour FM1
             modelBuilder.Entity<FM1>()
@@ -43,12 +45,6 @@ namespace GestionFM1.Read.QueryDataStore
                 .HasForeignKey(f => f.ExpertId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Commande>()
-                .HasOne(c => c.Composent)
-                .WithOne(co => co.Commande)
-                .HasForeignKey<Commande>(c => c.ComposentId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             // Relation entre User et Commande (One-to-Many)
             modelBuilder.Entity<Commande>()
                 .HasOne(c => c.Expert)
@@ -62,6 +58,27 @@ namespace GestionFM1.Read.QueryDataStore
                 .WithMany(f => f.Commandes)
                 .HasForeignKey(c => c.FM1Id)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            // Relation One-to-One entre FM1 et FM1History
+            modelBuilder.Entity<FM1>()
+                .HasOne(f => f.FM1History)
+                .WithOne(h => h.FM1)
+                .HasForeignKey<FM1History>(h => h.FM1Id)
+                .OnDelete(DeleteBehavior.Cascade); // ou DeleteBehavior.SetNull si vous voulez autoriser FM1 sans FM1History
+
+
+            // Relation One-to-Many entre FM1History et Commande
+            modelBuilder.Entity<FM1History>()
+                .HasMany(h => h.Commandes)
+                .WithOne(c => c.FM1History)
+                .HasForeignKey(c => c.FM1HistoryId)
+                .OnDelete(DeleteBehavior.SetNull); //Si on supprime l'historique, la commande peut exister (FM1HistoryId = null)
+
+           modelBuilder.Entity<Composent>()
+    .HasOne(c => c.Commande)
+    .WithOne(co => co.Composent)
+    .HasForeignKey<Composent>(c => c.CommandeId)  // Utiliser la clé étrangère explicite
+    .OnDelete(DeleteBehavior.SetNull); // Ajustez le comportement de suppression selon vos besoins
         }
     }
 }
