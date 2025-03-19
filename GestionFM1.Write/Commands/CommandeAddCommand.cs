@@ -11,5 +11,8 @@ namespace GestionFM1.Write.Commands
         public string ExpertId { get; set; }
         public string RaisonDeCommande { get; set; } = string.Empty;
         public Guid FM1Id { get; set; }
+
+                public Guid? FM1HistoryId { get; set; }
+
     }
 }

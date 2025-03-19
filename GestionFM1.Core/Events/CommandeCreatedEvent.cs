@@ -5,7 +5,7 @@ namespace GestionFM1.Core.Events
 {
     public class CommandeCreatedEvent : IEvent
     {
-        public int CommandeId { get; set; }
+        public int CommandeId { get; set; }  // Ajout de cette propriété
         public string EtatCommande { get; set; } = string.Empty;
         public DateTime DateCmd { get; set; }
         public Guid ComposentId { get; set; }

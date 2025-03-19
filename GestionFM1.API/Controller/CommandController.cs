@@ -5,6 +5,9 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using GestionFM1.DTOs;
 using System;
+using GestionFM1.Read.QueryDataStore;
+using Microsoft.EntityFrameworkCore;
+using GestionFM1.Core.Models;  // <--- Ajout de cet using
 
 namespace GestionFM1.API.Controllers
 {
@@ -119,7 +122,7 @@ namespace GestionFM1.API.Controllers
             }
         }
 
-      [HttpPost("add-commande")]
+         [HttpPost("add-commande")]
         public async Task<IActionResult> AddCommande([FromBody] CommandeAddDTO commandeAddDTO)
         {
             if (!ModelState.IsValid)
@@ -128,28 +131,81 @@ namespace GestionFM1.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var command = new CommandeAddCommand
-            {
-                EtatCommande = commandeAddDTO.EtatCommande,
-                DateCmd = commandeAddDTO.DateCmd,
-                ComposentId = commandeAddDTO.ComposentId,
-                ExpertId = commandeAddDTO.ExpertId,
-                RaisonDeCommande = commandeAddDTO.RaisonDeCommande,
-                FM1Id = commandeAddDTO.FM1Id
-            };
+            Guid? fm1HistoryId = null;
 
-            try
+            // Vérifier si un FM1History existe déjà pour cet FM1
+            _logger.LogInformation($"Sending CommandeAddCommand for ComposentId: {commandeAddDTO.ComposentId}");
+
+            // Creating a new scope inside action method
+            using (var scope = HttpContext.RequestServices.CreateScope())
             {
-                _logger.LogInformation($"Sending CommandeAddCommand for ComposentId: {commandeAddDTO.ComposentId}");
-                await _commandBus.SendCommandAsync(command, "gestionfm1.commande.commands");
-                return Ok();
+                 var context = scope.ServiceProvider.GetRequiredService<QueryDbContext>();
+
+                 var existingFM1History = await context.FM1Histories
+                      .FirstOrDefaultAsync(vh => vh.FM1Id == commandeAddDTO.FM1Id);
+
+                if (existingFM1History == null)
+                {
+                         _logger.LogInformation($"Creating a new FM1History pour FM1Id : {commandeAddDTO.FM1Id}");
+
+                       // Creating un nouvelle FM1History
+                       var newFM1History = new FM1History
+                       {
+                          Id = Guid.NewGuid(),
+                          FM1Id = commandeAddDTO.FM1Id
+                       };
+
+                        context.FM1Histories.Add(newFM1History);
+                        await context.SaveChangesAsync(); // Sauvegarder pour obtenir l'ID
+
+                        fm1HistoryId = newFM1History.Id; // Récupérer l'ID du nouvel FM1History
+
+                        // Récupérer l'FM1 correspondant
+                        var fm1 = await context.FM1s.FindAsync(commandeAddDTO.FM1Id);
+                        if (fm1 != null)
+                        {
+                            fm1.FM1HistoryId = newFM1History.Id;  // Mettre à jour FM1HistoryId
+                             //context.Entry(fm1).State = EntityState.Modified; //Enlever car SaveChange va le faire
+                            await context.SaveChangesAsync(); // Sauvegarder les changements sur FM1
+
+                            _logger.LogInformation($"FM1HistoryId mis à jour dans FM1 (ID: {fm1.Id})");
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"FM1 (ID: {commandeAddDTO.FM1Id}) non trouvé.");
+                        }
+                }
+                else
+                  {
+                     fm1HistoryId = existingFM1History.Id; // Utiliser l'ID de l'FM1History existant
+                     }
+                } // the scope get diposed here so the object do not pass anymore.
+
+                 // Creating new Command and pass fm1HistoryId
+                 var command = new CommandeAddCommand
+                 {
+                    EtatCommande = commandeAddDTO.EtatCommande,
+                    DateCmd = commandeAddDTO.DateCmd,
+                    ComposentId = commandeAddDTO.ComposentId,
+                    ExpertId = commandeAddDTO.ExpertId,
+                    RaisonDeCommande = commandeAddDTO.RaisonDeCommande,
+                    FM1Id = commandeAddDTO.FM1Id,
+                    FM1HistoryId = fm1HistoryId // Passer fm1HistoryId
+                };
+
+                 try
+                 {
+                      _logger.LogInformation($"Sending CommandeAddCommand for ComposentId: {commandeAddDTO.ComposentId}");
+                      await _commandBus.SendCommandAsync(command, "gestionfm1.commande.commands");
+                     return Ok();
+                }
+                catch (Exception ex)
+                {
+                     _logger.LogError(ex, $"Error while adding Commande for ComposentId: {commandeAddDTO.ComposentId}");
+                    return BadRequest(ex.Message);
+                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error while adding Commande for ComposentId: {commandeAddDTO.ComposentId}");
-                return BadRequest(ex.Message);
-            }
-        }
+
             [HttpPost("add-fm1history")]
         public async Task<IActionResult> AddFM1History([FromBody] AddFM1HistoryDTO addFM1HistoryDto)
         {

@@ -26,57 +26,31 @@ namespace GestionFM1.Read.EventHandlers
 
             try
             {
-                Guid? fm1HistoryId = null;
-
-                // Vérifier si un FM1History existe déjà pour cet FM1
-                var existingFM1History = await _queryDbContext.FM1Histories
-                    .FirstOrDefaultAsync(vh => vh.FM1Id == @event.FM1Id);
-
-                if (existingFM1History == null)
-                {
-                    _logger.LogInformation($"Création d'un nouveau FM1History pour FM1Id : {@event.FM1Id}");
-
-                    // Créer un nouvel FM1History
-                    var newFM1History = new FM1History
-                    {
-                        Id = Guid.NewGuid(),
-                        FM1Id = @event.FM1Id
-                    };
-
-                    _queryDbContext.FM1Histories.Add(newFM1History);
-                    await _queryDbContext.SaveChangesAsync();
-
-                    fm1HistoryId = newFM1History.Id; // Récupérer l'ID du nouvel FM1History
-                }
-                else
-                {
-                    fm1HistoryId = existingFM1History.Id; // Utiliser l'ID de l'FM1History existant
-                }
-
-                //Get the component and update it
-                var composent = await _queryDbContext.Composents.FindAsync(@event.ComposentId);
-
-                if (composent != null)
-                {
-                    composent.OrderOrNot = "Commandé";
-                }
-
+                // Créer la commande
                 var commande = new Commande
                 {
-                   
                     EtatCommande = @event.EtatCommande,
                     DateCmd = @event.DateCmd,
                     ComposentId = @event.ComposentId,
                     ExpertId = @event.ExpertId,
                     RaisonDeCommande = @event.RaisonDeCommande,
                     FM1Id = @event.FM1Id,
-                    FM1HistoryId = fm1HistoryId // Associer la commande à l'historique
+                    FM1HistoryId = @event.FM1HistoryId // Utiliser la valeur de l'événement
                 };
 
                 _queryDbContext.Commandes.Add(commande);
                 await _queryDbContext.SaveChangesAsync();
 
-                _logger.LogInformation($"Commande ajoutée à la base de données de lecture, associée à FM1HistoryId : {fm1HistoryId}");
+                  //Get the component and update it, and the commande id.
+                var composent = await _queryDbContext.Composents.FindAsync(@event.ComposentId);
+                if (composent != null)
+                {
+                    composent.OrderOrNot = "Commandé";
+                     composent.CommandeId = commande.Id;  // <--- Mettre à jour CommandeId du composant
+                    await _queryDbContext.SaveChangesAsync();
+                }
+
+                _logger.LogInformation($"Commande ajoutée à la base de données de lecture, associée à FM1HistoryId : {@event.FM1HistoryId}");
             }
             catch (DbUpdateException ex)
             {

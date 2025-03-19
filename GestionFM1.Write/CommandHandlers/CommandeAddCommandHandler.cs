@@ -28,7 +28,8 @@ namespace GestionFM1.Write.CommandHandlers
         {
             try
             {
-                var commandeId = new Random().Next(1, 1000);
+               var commandeId = new Random().Next(1, 1000);
+
                 var commandeCreatedEvent = new CommandeCreatedEvent
                 {
                     CommandeId = commandeId,
@@ -37,7 +38,9 @@ namespace GestionFM1.Write.CommandHandlers
                     ComposentId = command.ComposentId,
                     ExpertId = command.ExpertId,
                     RaisonDeCommande = command.RaisonDeCommande,
-                    FM1Id = command.FM1Id
+                    FM1Id = command.FM1Id,
+                    FM1HistoryId = command.FM1HistoryId, // <-- Passez FM1HistoryId
+                    
                 };
 
                 await _eventStore.SaveEventAsync(commandeCreatedEvent);
