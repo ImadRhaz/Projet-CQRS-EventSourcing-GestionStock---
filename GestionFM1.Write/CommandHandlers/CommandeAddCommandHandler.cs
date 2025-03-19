@@ -5,7 +5,6 @@ using GestionFM1.Write.Commands;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
-using GestionFM1.Write.Aggregates;
 
 namespace GestionFM1.Write.CommandHandlers
 {
@@ -29,24 +28,21 @@ namespace GestionFM1.Write.CommandHandlers
         {
             try
             {
-                var aggregate = new CommandeAggregate();
-                aggregate.AddCommande(
-                    command.EtatCommande,
-                    command.DateCmd,
-                    command.ComposentId,
-                    command.ExpertId,
-                    command.RaisonDeCommande,
-                    command.FM1Id
-                );
-
-                foreach (var @event in aggregate.GetChanges())
+                var commandeId = new Random().Next(1, 1000);
+                var commandeCreatedEvent = new CommandeCreatedEvent
                 {
-                    await _eventStore.SaveEventAsync(@event);
-                    await _eventBus.PublishEventAsync(@event, "gestionfm1.commande.events");
-                    _logger.LogInformation($"Commande créée et événement publié via RabbitMQ.");
-                }
+                    CommandeId = commandeId,
+                    EtatCommande = command.EtatCommande,
+                    DateCmd = command.DateCmd,
+                    ComposentId = command.ComposentId,
+                    ExpertId = command.ExpertId,
+                    RaisonDeCommande = command.RaisonDeCommande,
+                    FM1Id = command.FM1Id
+                };
 
-
+                await _eventStore.SaveEventAsync(commandeCreatedEvent);
+                await _eventBus.PublishEventAsync(commandeCreatedEvent, "gestionfm1.commande.events");
+                _logger.LogInformation($"Commande créée et événement publié via RabbitMQ.");
             }
             catch (Exception ex)
             {

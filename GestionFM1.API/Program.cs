@@ -91,7 +91,7 @@ builder.Services.AddScoped<IEventHandler<ComposentCreatedEvent>, ComposentCreate
 
 // 6.4 Handlers pour Commande (Ajout des services pour Commande)
 builder.Services.AddScoped<ICommandHandler<CommandeAddCommand>, CommandeAddCommandHandler>();
-builder.Services.AddScoped<IEventHandler<CommandeCreatedEvent>, CommandeCreatedEventHandler>();
+builder.Services.AddScoped<IEventHandler<CommandeCreatedEvent>, CommandeCreatedEventHandler>(); // Garder
 
 // 6.5 Handlers pour FM1History
 builder.Services.AddScoped<ICommandHandler<AddFM1HistoryCommand>, AddFM1HistoryCommandHandler>();

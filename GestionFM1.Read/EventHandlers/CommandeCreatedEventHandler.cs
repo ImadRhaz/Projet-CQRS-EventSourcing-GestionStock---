@@ -22,7 +22,7 @@ namespace GestionFM1.Read.EventHandlers
 
         public async Task Handle(CommandeCreatedEvent @event)
         {
-            _logger.LogInformation($"🔄 Début du traitement de CommandeCreatedEvent pour l'ID : {@event.CommandeId}");
+            _logger.LogInformation($"Début du traitement de CommandeCreatedEvent pour l'ID : {@event.CommandeId}");
 
             try
             {
@@ -53,9 +53,17 @@ namespace GestionFM1.Read.EventHandlers
                     fm1HistoryId = existingFM1History.Id; // Utiliser l'ID de l'FM1History existant
                 }
 
+                //Get the component and update it
+                var composent = await _queryDbContext.Composents.FindAsync(@event.ComposentId);
+
+                if (composent != null)
+                {
+                    composent.OrderOrNot = "Commandé";
+                }
+
                 var commande = new Commande
                 {
-                    Id = @event.CommandeId,
+                   
                     EtatCommande = @event.EtatCommande,
                     DateCmd = @event.DateCmd,
                     ComposentId = @event.ComposentId,
@@ -68,7 +76,7 @@ namespace GestionFM1.Read.EventHandlers
                 _queryDbContext.Commandes.Add(commande);
                 await _queryDbContext.SaveChangesAsync();
 
-                _logger.LogInformation($"Commande ajoutée à la base de données de lecture avec l'ID : {@event.CommandeId}, associée à FM1HistoryId : {fm1HistoryId}");
+                _logger.LogInformation($"Commande ajoutée à la base de données de lecture, associée à FM1HistoryId : {fm1HistoryId}");
             }
             catch (DbUpdateException ex)
             {
@@ -79,7 +87,7 @@ namespace GestionFM1.Read.EventHandlers
                 _logger.LogError(ex, "Erreur lors du traitement de l'événement CommandeCreatedEvent.");
             }
 
-            _logger.LogInformation($"🏁 Fin du traitement de l'événement CommandeCreatedEvent pour l'ID : {@event.CommandeId}");
+            _logger.LogInformation($"Fin du traitement de l'événement CommandeCreatedEvent");
         }
     }
 }
