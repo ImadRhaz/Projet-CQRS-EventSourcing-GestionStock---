@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Shared\\GestionFM1.Shared.csproj",
+      "projectUniqueName": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Shared\\GestionFM1.Shared.csproj",
       "projectName": "GestionFM1.Shared",
-      "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Shared\\GestionFM1.Shared.csproj",
+      "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Shared\\GestionFM1.Shared.csproj",
       "packagesPath": "C:\\Users\\pc\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Shared\\obj\\",
+      "outputPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Shared\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\pc\\AppData\\Roaming\\NuGet\\NuGet.Config",

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "VRD7F4LKgZQ=",
+  "dgSpecHash": "NfpqY/Z1WhQ=",
   "success": true,
-  "projectFilePath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Infrastructure\\GestionFM1.Infrastructure.csproj",
+  "projectFilePath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Infrastructure\\GestionFM1.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\pc\\.nuget\\packages\\microsoft.aspnetcore.cryptography.internal\\8.0.0\\microsoft.aspnetcore.cryptography.internal.8.0.0.nupkg.sha512",
     "C:\\Users\\pc\\.nuget\\packages\\microsoft.aspnetcore.cryptography.keyderivation\\8.0.0\\microsoft.aspnetcore.cryptography.keyderivation.8.0.0.nupkg.sha512",

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Read\\GestionFM1.Read.csproj": {}
+    "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Read\\GestionFM1.Read.csproj": {}
   },
   "projects": {
-    "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Core\\GestionFM1.Core.csproj": {
+    "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Core\\GestionFM1.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Core\\GestionFM1.Core.csproj",
+        "projectUniqueName": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Core\\GestionFM1.Core.csproj",
         "projectName": "GestionFM1.Core",
-        "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Core\\GestionFM1.Core.csproj",
+        "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Core\\GestionFM1.Core.csproj",
         "packagesPath": "C:\\Users\\pc\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Core\\obj\\",
+        "outputPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Core\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\pc\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -71,14 +71,14 @@
         }
       }
     },
-    "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.DTOs\\GestionFM1.DTOs.csproj": {
+    "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.DTOs\\GestionFM1.DTOs.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.DTOs\\GestionFM1.DTOs.csproj",
+        "projectUniqueName": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.DTOs\\GestionFM1.DTOs.csproj",
         "projectName": "GestionFM1.DTOs",
-        "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.DTOs\\GestionFM1.DTOs.csproj",
+        "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.DTOs\\GestionFM1.DTOs.csproj",
         "packagesPath": "C:\\Users\\pc\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.DTOs\\obj\\",
+        "outputPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.DTOs\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\pc\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -132,14 +132,14 @@
         }
       }
     },
-    "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Read\\GestionFM1.Read.csproj": {
+    "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Read\\GestionFM1.Read.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Read\\GestionFM1.Read.csproj",
+        "projectUniqueName": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Read\\GestionFM1.Read.csproj",
         "projectName": "GestionFM1.Read",
-        "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Read\\GestionFM1.Read.csproj",
+        "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Read\\GestionFM1.Read.csproj",
         "packagesPath": "C:\\Users\\pc\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Read\\obj\\",
+        "outputPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Read\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\pc\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -157,14 +157,14 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Core\\GestionFM1.Core.csproj": {
-                "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Core\\GestionFM1.Core.csproj"
+              "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Core\\GestionFM1.Core.csproj": {
+                "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Core\\GestionFM1.Core.csproj"
               },
-              "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.DTOs\\GestionFM1.DTOs.csproj": {
-                "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.DTOs\\GestionFM1.DTOs.csproj"
+              "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.DTOs\\GestionFM1.DTOs.csproj": {
+                "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.DTOs\\GestionFM1.DTOs.csproj"
               },
-              "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Utilities\\GestionFM1.Utilities.csproj": {
-                "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Utilities\\GestionFM1.Utilities.csproj"
+              "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Utilities\\GestionFM1.Utilities.csproj": {
+                "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Utilities\\GestionFM1.Utilities.csproj"
               }
             }
           }
@@ -225,14 +225,14 @@
         }
       }
     },
-    "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Utilities\\GestionFM1.Utilities.csproj": {
+    "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Utilities\\GestionFM1.Utilities.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Utilities\\GestionFM1.Utilities.csproj",
+        "projectUniqueName": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Utilities\\GestionFM1.Utilities.csproj",
         "projectName": "GestionFM1.Utilities",
-        "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Utilities\\GestionFM1.Utilities.csproj",
+        "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Utilities\\GestionFM1.Utilities.csproj",
         "packagesPath": "C:\\Users\\pc\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Utilities\\obj\\",
+        "outputPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Utilities\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\pc\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -250,8 +250,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Core\\GestionFM1.Core.csproj": {
-                "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Core\\GestionFM1.Core.csproj"
+              "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Core\\GestionFM1.Core.csproj": {
+                "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Core\\GestionFM1.Core.csproj"
               }
             }
           }

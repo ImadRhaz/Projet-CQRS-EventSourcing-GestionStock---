@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "s4X/rUNYCZo=",
+  "dgSpecHash": "y2omBACfc9g=",
   "success": true,
-  "projectFilePath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Write\\GestionFM1.Write.csproj",
+  "projectFilePath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Write\\GestionFM1.Write.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\pc\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\pc\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",

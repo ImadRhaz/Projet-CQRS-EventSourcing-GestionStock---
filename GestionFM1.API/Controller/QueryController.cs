@@ -26,6 +26,7 @@ namespace GestionFM1.API.Controllers
         private readonly IQueryHandler<GetAllCommandesQuery, IEnumerable<Commande>> _getAllCommandesQueryHandler;
         private readonly IQueryHandler<GetCommandeByIdQuery, Commande> _getCommandeByIdQueryHandler;
          private readonly IQueryHandler<GetAllFM1HistoriesQuery, IEnumerable<FM1History>> _getAllFM1HistoriesQueryHandler;
+         private readonly IQueryHandler<GetComposentsByFM1IdQuery, IEnumerable<Composent>> _getComposentsByFM1IdQueryHandler; // Add
 
         public QueryController(
             IQueryHandler<GetUserRolesQuery, IList<string>> getUserRolesQueryHandler,
@@ -37,7 +38,8 @@ namespace GestionFM1.API.Controllers
             IQueryHandler<GetComposentByIdQuery, Composent> getComposentByIdQueryHandler,
              IQueryHandler<GetAllCommandesQuery, IEnumerable<Commande>> getAllCommandesQueryHandler,
             IQueryHandler<GetCommandeByIdQuery, Commande> getCommandeByIdQueryHandler,
-             IQueryHandler<GetAllFM1HistoriesQuery, IEnumerable<FM1History>> getAllFM1HistoriesQueryHandler)
+             IQueryHandler<GetAllFM1HistoriesQuery, IEnumerable<FM1History>> getAllFM1HistoriesQueryHandler,
+             IQueryHandler<GetComposentsByFM1IdQuery, IEnumerable<Composent>> getComposentsByFM1IdQueryHandler) // Add
         {
             _loginQueryHandler = loginQueryHandler;
             _getUserRolesQueryHandler = getUserRolesQueryHandler;
@@ -49,6 +51,7 @@ namespace GestionFM1.API.Controllers
             _getAllCommandesQueryHandler = getAllCommandesQueryHandler;
             _getCommandeByIdQueryHandler = getCommandeByIdQueryHandler;
              _getAllFM1HistoriesQueryHandler = getAllFM1HistoriesQueryHandler;
+             _getComposentsByFM1IdQueryHandler = getComposentsByFM1IdQueryHandler; // Add
         }
 
         [AllowAnonymous]
@@ -159,63 +162,93 @@ namespace GestionFM1.API.Controllers
         }
 
         [HttpGet("composents")]
-public async Task<IActionResult> GetAllComposents()
-{
-    _logger.LogInformation("Récupération de tous les Composents.");
-    var result = await _getAllComposentsQueryHandler.Handle(new GetAllComposentsQuery());
+        public async Task<IActionResult> GetAllComposents()
+        {
+            _logger.LogInformation("Récupération de tous les Composents.");
+            var result = await _getAllComposentsQueryHandler.Handle(new GetAllComposentsQuery());
 
-    if (result == null || !result.Any())
-    {
-        _logger.LogWarning("Aucun Composent trouvé.");
-        return NotFound();
-    }
+            if (result == null || !result.Any())
+            {
+                _logger.LogWarning("Aucun Composent trouvé.");
+                return NotFound();
+            }
 
-    // Convertir les Composents en DTOs
-    var composentDtos = result.Select(c => new ComposentDTO
-    {
-        Id = c.Id,
-        ItemBaseId = c.ItemBaseId,
-        ProductName = c.ProductName,
-        SN = c.SN,
-        TotalAvailable = c.TotalAvailable,
-        UrgentOrNot = c.UrgentOrNot,
-        OrderOrNot = c.OrderOrNot, // <---- AJOUTEZ CETTE LIGNE !
-        FM1Id = c.FM1Id,
-        CommandeId = c.CommandeId
-    });
+            // Convertir les Composents en DTOs
+            var composentDtos = result.Select(c => new ComposentDTO
+            {
+                Id = c.Id,
+                ItemBaseId = c.ItemBaseId,
+                ProductName = c.ProductName,
+                SN = c.SN,
+                TotalAvailable = c.TotalAvailable,
+                UrgentOrNot = c.UrgentOrNot,
+                OrderOrNot = c.OrderOrNot,
+                FM1Id = c.FM1Id,
+                CommandeId = c.CommandeId
+            });
 
-    return Ok(composentDtos);
-}
+            return Ok(composentDtos);
+        }
 
-      [HttpGet("composent/{id}")]
-public async Task<IActionResult> GetComposentById(Guid id)
-{
-    _logger.LogInformation($"Récupération du Composent avec l'ID : {id}.");
+        [HttpGet("composent/{id}")]
+        public async Task<IActionResult> GetComposentById(Guid id)
+        {
+            _logger.LogInformation($"Récupération du Composent avec l'ID : {id}.");
 
-    var result = await _getComposentByIdQueryHandler.Handle(new GetComposentByIdQuery(id));
+            var result = await _getComposentByIdQueryHandler.Handle(new GetComposentByIdQuery(id));
 
-    if (result == null)
-    {
-        _logger.LogWarning($"Aucun Composent trouvé avec l'ID : {id}.");
-        return NotFound();
-    }
+            if (result == null)
+            {
+                _logger.LogWarning($"Aucun Composent trouvé avec l'ID : {id}.");
+                return NotFound();
+            }
 
-    // Convertir le Composent en DTO
-    var composentDto = new ComposentDTO
-    {
-        Id = result.Id,
-        ItemBaseId = result.ItemBaseId,
-        ProductName = result.ProductName,
-        SN = result.SN,
-        TotalAvailable = result.TotalAvailable,
-        UrgentOrNot = result.UrgentOrNot,
-        OrderOrNot = result.OrderOrNot, // <---- AJOUTEZ CETTE LIGNE !
-        FM1Id = result.FM1Id,
-        CommandeId = result.CommandeId
-    };
+            // Convertir le Composent en DTO
+            var composentDto = new ComposentDTO
+            {
+                Id = result.Id,
+                ItemBaseId = result.ItemBaseId,
+                ProductName = result.ProductName,
+                SN = result.SN,
+                TotalAvailable = result.TotalAvailable,
+                UrgentOrNot = result.UrgentOrNot,
+                OrderOrNot = result.OrderOrNot,
+                FM1Id = result.FM1Id,
+                CommandeId = result.CommandeId
+            };
 
-    return Ok(composentDto);
-}
+            return Ok(composentDto);
+        }
+         [HttpGet("composents/by-fm1/{fm1Id}")]
+        public async Task<IActionResult> GetComposentsByFM1Id(Guid fm1Id)
+        {
+            _logger.LogInformation($"Récupération des Composents pour le FM1 avec l'ID : {fm1Id}.");
+
+            var result = await _getComposentsByFM1IdQueryHandler.Handle(new GetComposentsByFM1IdQuery(fm1Id));
+
+            if (result == null || !result.Any())
+            {
+                _logger.LogWarning($"Aucun Composent trouvé pour le FM1 avec l'ID : {fm1Id}.");
+                return NotFound();
+            }
+
+            // Convertir les Composents en DTOs
+            var composentDtos = result.Select(c => new ComposentDTO
+            {
+                Id = c.Id,
+                ItemBaseId = c.ItemBaseId,
+                ProductName = c.ProductName,
+                SN = c.SN,
+                TotalAvailable = c.TotalAvailable,
+                UrgentOrNot = c.UrgentOrNot,
+                OrderOrNot = c.OrderOrNot,
+                FM1Id = c.FM1Id,
+                CommandeId = c.CommandeId
+            });
+
+            return Ok(composentDtos);
+        }
+
          [HttpGet("commandes")]
         public async Task<IActionResult> GetAllCommandes()
         {

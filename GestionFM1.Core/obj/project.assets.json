@@ -816,11 +816,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Core\\GestionFM1.Core.csproj",
+      "projectUniqueName": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Core\\GestionFM1.Core.csproj",
       "projectName": "GestionFM1.Core",
-      "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Core\\GestionFM1.Core.csproj",
+      "projectPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Core\\GestionFM1.Core.csproj",
       "packagesPath": "C:\\Users\\pc\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\Gestion FM1\\GestionFM1.Core\\obj\\",
+      "outputPath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.Core\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\pc\\AppData\\Roaming\\NuGet\\NuGet.Config",

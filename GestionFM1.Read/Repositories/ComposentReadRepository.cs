@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using GestionFM1.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Linq; // Make sure to have this
 
 namespace GestionFM1.Read.Repositories
 {
@@ -59,6 +60,27 @@ namespace GestionFM1.Read.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erreur lors de la récupération de tous les Composents.");
+                throw;
+            }
+        }
+
+        // Added method
+        public async Task<IEnumerable<Composent>> GetComposentsByFM1IdAsync(Guid fm1Id)
+        {
+            try
+            {
+                _logger.LogInformation($"Récupération des Composents pour le FM1 avec l'ID : {fm1Id}.");
+                var composants = await _context.Composents
+                    .Include(c => c.FM1)
+                    .Include(c => c.Commande)
+                    .Where(c => c.FM1Id == fm1Id)
+                    .ToListAsync();
+
+                return composants;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Erreur lors de la récupération des Composents pour le FM1 avec l'ID : {fm1Id}.");
                 throw;
             }
         }

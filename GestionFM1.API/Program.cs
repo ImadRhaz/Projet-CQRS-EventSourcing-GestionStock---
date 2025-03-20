@@ -35,6 +35,19 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// Add CORS services
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:3000") // Replace with your frontend's URL
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials(); // Important for cookies and authorization headers
+        });
+});
+
 // 3. Configuration Swagger
 builder.Services.AddSwaggerGen(c =>
 {
@@ -160,11 +173,15 @@ builder.Services.AddScoped<IQueryHandler<GetCommandeByIdQuery, Commande>, GetCom
 // 11.4 Ajout des Query Handlers pour FM1History
 builder.Services.AddScoped<IQueryHandler<GetAllFM1HistoriesQuery, IEnumerable<FM1History>>, GetAllFM1HistoriesQueryHandler>();
 
+// 11.5 Registration for  GetComposentsByFM1IdQuery
+
+builder.Services.AddScoped<IQueryHandler<GetComposentsByFM1IdQuery, IEnumerable<Composent>>, GetComposentsByFM1IdQueryHandler>();
 //11.5 Ajout des Repositories Read
 builder.Services.AddScoped<IFM1ReadRepository, FM1ReadRepository>();
 builder.Services.AddScoped<IComposentReadRepository, ComposentReadRepository>();
 builder.Services.AddScoped<ICommandeReadRepository, CommandeReadRepository>();
 builder.Services.AddScoped<IFM1HistoryReadRepository, FM1HistoryReadRepository>();
+
 
 var app = builder.Build();
 
@@ -176,6 +193,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Enable CORS
+app.UseCors("AllowSpecificOrigin");
+
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

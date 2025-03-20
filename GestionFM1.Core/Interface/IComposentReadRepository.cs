@@ -9,5 +9,7 @@ namespace GestionFM1.Core.Interfaces
     {
         Task<Composent> GetComposentByIdAsync(Guid id);
         Task<IEnumerable<Composent>> GetAllComposentsAsync();
+        Task<IEnumerable<Composent>> GetComposentsByFM1IdAsync(Guid fm1Id);  // Added
+
     }
 }
