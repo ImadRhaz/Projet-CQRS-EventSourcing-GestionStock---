@@ -25,7 +25,7 @@ using Newtonsoft.Json;
 using GestionFM1.Read.QueryHandlers;
 using System.Collections.Generic;
 using GestionFM1.Read.Queries;
-
+using GestionFM1.Controllers;
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Chargement de la configuration
@@ -119,9 +119,16 @@ builder.Services.AddScoped<CommandeWriteRepository>(); // Ajout de CommandeWrite
 builder.Services.AddScoped<FM1HistoryWriteRepository>();
 
 // 7. Configuration Identity
+
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<QueryDbContext>()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders(); // Ajout pour 2FA
+
+// Configuration des options Identity pour 2FA
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Tokens.AuthenticatorTokenProvider = "Authenticator";
+});// 7. Configuration Identity
 
 // 8. Ajout des services hébergés (Consumers)
 builder.Services.AddHostedService<RegisterUserCommandConsumer>();
@@ -187,6 +194,9 @@ builder.Services.AddScoped<IQueryHandler<GetFM1HistoryByFM1IdQuery, FM1History>,
 // ... dans la méthode ConfigureServices
 
 builder.Services.AddScoped<IQueryHandler<GetFM1HistoryByFM1IdQuery, FM1History>, GetFM1HistoryByFM1IdQueryHandler>();
+
+// Ajouter le contrôleur pour ExcelFm1
+builder.Services.AddScoped<ExcelFm1Controller>();
 var app = builder.Build();
 
 // 12. Configuration du pipeline HTTP
@@ -212,7 +222,7 @@ using (var scope = app.Services.CreateScope())
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    string[] roleNames = { "Admin", "Gestionnaire", "Utilisateur" };
+    string[] roleNames = { "Expert", "Magasinier" };
     foreach (var roleName in roleNames)
     {
         if (!await roleManager.RoleExistsAsync(roleName))

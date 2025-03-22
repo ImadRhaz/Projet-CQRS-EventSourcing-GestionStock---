@@ -10,8 +10,10 @@ using System;
 using GestionFM1.Core.Models;
 using System.Linq;
 using System.Collections.Generic;
-
-
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration; // Ajout de l'importation pour IConfiguration
+using GestionFM1.Utilities; // Ajout de l'importation pour JwtUtils
 
 namespace GestionFM1.API.Controllers
 {
@@ -30,27 +32,33 @@ namespace GestionFM1.API.Controllers
         private readonly IQueryHandler<GetCommandeByIdQuery, Commande> _getCommandeByIdQueryHandler;
         private readonly IQueryHandler<GetAllFM1HistoriesQuery, IEnumerable<FM1History>> _getAllFM1HistoriesQueryHandler;
         private readonly IQueryHandler<GetComposentsByFM1IdQuery, IEnumerable<Composent>> _getComposentsByFM1IdQueryHandler;
-        private readonly IQueryHandler<GetFM1HistoryByFM1IdQuery, FM1History> _getFM1HistoryByFM1IdQueryHandler; // Added
+        private readonly IQueryHandler<GetFM1HistoryByFM1IdQuery, FM1History> _getFM1HistoryByFM1IdQueryHandler;
+        private readonly IFM1ReadRepository _fm1ReadRepository;
+        private readonly UserManager<User> _userManager;
+        private readonly IConfiguration _configuration; // Ajout de IConfiguration
 
         public QueryController(
+            UserManager<User> userManager,
             IQueryHandler<GetUserRolesQuery, IList<string>> getUserRolesQueryHandler,
             LoginQueryHandler loginQueryHandler,
             ILogger<QueryController> logger,
-            
+            IFM1ReadRepository fm1ReadRepository,
             IQueryHandler<GetAllFM1Query, IEnumerable<FM1>> getAllFM1QueryHandler,
             IQueryHandler<GetFM1ByIdQuery, FM1> getFM1ByIdQueryHandler,
-             IQueryHandler<GetAllComposentsQuery, IEnumerable<Composent>> getAllComposentsQueryHandler,
+            IQueryHandler<GetAllComposentsQuery, IEnumerable<Composent>> getAllComposentsQueryHandler,
             IQueryHandler<GetComposentByIdQuery, Composent> getComposentByIdQueryHandler,
-             IQueryHandler<GetAllCommandesQuery, IEnumerable<Commande>> getAllCommandesQueryHandler,
+            IQueryHandler<GetAllCommandesQuery, IEnumerable<Commande>> getAllCommandesQueryHandler,
             IQueryHandler<GetCommandeByIdQuery, Commande> getCommandeByIdQueryHandler,
-             IQueryHandler<GetComposentsByFM1IdQuery, IEnumerable<Composent>> getComposentsByFM1IdQueryHandler,
+            IQueryHandler<GetComposentsByFM1IdQuery, IEnumerable<Composent>> getComposentsByFM1IdQueryHandler,
             IQueryHandler<GetAllFM1HistoriesQuery, IEnumerable<FM1History>> getAllFM1HistoriesQueryHandler,
-            IQueryHandler<GetFM1HistoryByFM1IdQuery, FM1History> getFM1HistoryByFM1IdQueryHandler // Added
-            )
+            IQueryHandler<GetFM1HistoryByFM1IdQuery, FM1History> getFM1HistoryByFM1IdQueryHandler,
+            IConfiguration configuration // Ajout de IConfiguration
+        )
         {
             _loginQueryHandler = loginQueryHandler;
             _getUserRolesQueryHandler = getUserRolesQueryHandler;
             _logger = logger;
+            _fm1ReadRepository = fm1ReadRepository;
             _getAllFM1QueryHandler = getAllFM1QueryHandler;
             _getFM1ByIdQueryHandler = getFM1ByIdQueryHandler;
             _getAllComposentsQueryHandler = getAllComposentsQueryHandler;
@@ -59,7 +67,9 @@ namespace GestionFM1.API.Controllers
             _getCommandeByIdQueryHandler = getCommandeByIdQueryHandler;
             _getComposentsByFM1IdQueryHandler = getComposentsByFM1IdQueryHandler;
             _getAllFM1HistoriesQueryHandler = getAllFM1HistoriesQueryHandler;
-            _getFM1HistoryByFM1IdQueryHandler = getFM1HistoryByFM1IdQueryHandler; // Added
+            _getFM1HistoryByFM1IdQueryHandler = getFM1HistoryByFM1IdQueryHandler;
+            _userManager = userManager;
+            _configuration = configuration; // Initialisation de IConfiguration
         }
 
         [AllowAnonymous]
@@ -68,48 +78,42 @@ namespace GestionFM1.API.Controllers
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Tentative de connexion avec un modèle invalide.");
                 return BadRequest(ModelState);
             }
 
-            var query = new LoginQuery
-            {
-                Email = loginDto.Email,
-                Password = loginDto.Password
-            };
+            // Trouver l'utilisateur par email
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
-            _logger.LogInformation($"Tentative de connexion pour l'utilisateur : {loginDto.Email}.");
-            var token = await _loginQueryHandler.Handle(query);
+            if (user == null)
+            {
+                return Unauthorized("Utilisateur non trouvé.");
+            }
+
+            // Vérifier le mot de passe
+            var passwordValid = await _userManager.CheckPasswordAsync(user, loginDto.Password);
+            if (!passwordValid)
+            {
+                return Unauthorized("Mot de passe incorrect.");
+            }
+
+            // Vérifier si la 2FA est activée
+            if (await _userManager.GetTwoFactorEnabledAsync(user))
+            {
+                // Renvoyer une réponse indiquant que la 2FA est requise
+                return Ok(new { TwoFactorRequired = true, Email = user.Email });
+            }
+
+            // Si la 2FA n'est pas activée, générer un token JWT
+            var roles = await _userManager.GetRolesAsync(user); // Récupérer les rôles de l'utilisateur
+            var token = JwtUtils.GenerateJwtToken(user, _configuration, roles); // Utiliser JwtUtils
 
             if (token != null)
             {
-                _logger.LogInformation($"Connexion réussie pour l'utilisateur : {loginDto.Email}.");
                 return Ok(new { Token = token });
             }
 
-            _logger.LogWarning($"Échec de la connexion pour l'utilisateur : {loginDto.Email}.");
-            return Unauthorized();
-
+            return Unauthorized("Erreur lors de la génération du token.");
         }
-
-        [HttpGet("user-roles/{userId}")]
-        public async Task<IActionResult> GetUserRoles(string userId)
-        {
-            _logger.LogInformation($"Récupération des rôles pour l'utilisateur avec l'ID : {userId}.");
-            var result = await _getUserRolesQueryHandler.Handle(new GetUserRolesQuery { UserId = userId });
-
-            if (result == null)
-            {
-                _logger.LogWarning($"Aucun rôle trouvé pour l'utilisateur avec l'ID : {userId}.");
-            }
-            else
-            {
-                _logger.LogInformation($"Rôles récupérés pour l'utilisateur avec l'ID : {userId}: {string.Join(", ", result)}");
-            }
-
-            return Ok(result);
-        }
-
         [HttpGet("fm1s")]
         public async Task<IActionResult> GetAllFM1()
         {
@@ -396,7 +400,24 @@ public async Task<IActionResult> GetFM1HistoryByFM1Id(Guid fm1Id)
     return Ok(fm1HistoryDto);
 }
 
-
+[HttpDelete("fm1/{id}")]
+public async Task<IActionResult> DeleteFM1(Guid id)
+{
+    try
+    {
+        await _fm1ReadRepository.DeleteFM1ByIdAsync(id);
+        return NoContent(); // 204 No Content
+    }
+    catch (DbUpdateConcurrencyException)
+    {
+        return Conflict(); // 409 Conflict
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, $"Error deleting FM1 with ID: {id}");
+        return StatusCode(500, "An error occurred while deleting the FM1."); // 500 Internal Server Error
+    }
+}
 
 
     }

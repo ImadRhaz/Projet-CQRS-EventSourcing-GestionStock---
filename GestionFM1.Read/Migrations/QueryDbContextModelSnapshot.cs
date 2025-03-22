@@ -108,6 +108,55 @@ namespace GestionFM1.Read.Migrations
                     b.ToTable("Composents", (string)null);
                 });
 
+            modelBuilder.Entity("GestionFM1.Core.Models.ExcelComposent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AnComposent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ComposentName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SnComposent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("TotalAvailable")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExcelComposents", (string)null);
+                });
+
+            modelBuilder.Entity("GestionFM1.Core.Models.ExcelFm1", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SiteCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SnPs")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TypeDevice")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExcelFm1s", (string)null);
+                });
+
             modelBuilder.Entity("GestionFM1.Core.Models.FM1", b =>
                 {
                     b.Property<Guid>("Id")
@@ -124,6 +173,9 @@ namespace GestionFM1.Read.Migrations
                     b.Property<string>("DeviceType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ExcelFm1Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ExpertId")
                         .HasColumnType("nvarchar(450)");
@@ -143,6 +195,8 @@ namespace GestionFM1.Read.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExcelFm1Id");
 
                     b.HasIndex("ExpertId");
 
@@ -419,10 +473,16 @@ namespace GestionFM1.Read.Migrations
 
             modelBuilder.Entity("GestionFM1.Core.Models.FM1", b =>
                 {
+                    b.HasOne("GestionFM1.Core.Models.ExcelFm1", "ExcelFm1")
+                        .WithMany()
+                        .HasForeignKey("ExcelFm1Id");
+
                     b.HasOne("GestionFM1.Core.Models.User", "Expert")
                         .WithMany("FM1s")
                         .HasForeignKey("ExpertId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ExcelFm1");
 
                     b.Navigation("Expert");
                 });

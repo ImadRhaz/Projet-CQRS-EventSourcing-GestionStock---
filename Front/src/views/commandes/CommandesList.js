@@ -1,5 +1,5 @@
 // 1- Importation des modules nécessaires
-import React, { useState, useEffect } from "react"; // Hooks React
+import React, { useState, useEffect, useCallback } from "react"; // Hooks React
 import axios from "axios"; // Pour les requêtes HTTP
 import Swal from 'sweetalert2'; // Pour les alertes stylisées
 import {
@@ -37,7 +37,7 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
     width: '100%',
 }));
 
-const StyledTable = styled(Table)(({ theme}) => ({
+const StyledTable = styled(Table)(({ theme }) => ({
     width: 'max-content',
     minWidth: '100%',
     tableLayout: 'auto',
@@ -62,19 +62,31 @@ const CommandesList = () => {
     const [userId, setUserId] = useState(null); // État pour l'ID de l'utilisateur
     const [roles, setRoles] = useState([]); // État pour les rôles de l'utilisateur
 
-    // 4- Décodage du token pour récupérer l'ID de l'utilisateur et les rôles
+    // 4- Fonction pour récupérer les rôles de l'utilisateur via l'API
+    const fetchUserRoles = useCallback(async (userId) => {
+        try {
+            const response = await axios.get(`${BASE_URL}Query/user-roles/${userId}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+            });
+            setRoles(response.data); // Stocker les rôles dans l'état
+        } catch (err) {
+            console.error('Erreur lors de la récupération des rôles:', err);
+            setError('Échec de la récupération des rôles.');
+        }
+    }, [BASE_URL]);
+
+    // 5- Décodage du token pour récupérer l'ID de l'utilisateur
     useEffect(() => {
         const token = localStorage.getItem('token'); // Récupérer le token depuis le localStorage
         if (token) {
             try {
                 const decodedToken = jwtDecode(token); // Décoder le token
-                const userId = decodedToken.sub; // Récupérer l'ID de l'utilisateur (sub)
-                const roles = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']; // Récupérer les rôles
-                console.log('Decoded roles:', roles);
-                console.log('ID récupéré du token:', userId);
+                const userId = decodedToken.nameid || decodedToken.sub; // Récupérer l'ID de l'utilisateur
+                if (!userId) {
+                    throw new Error('ID utilisateur non trouvé dans le token.');
+                }
                 setUserId(userId); // Stocker l'ID dans l'état
-                setRoles(Array.isArray(roles) ? roles : [roles]); // Stocker les rôles dans l'état (convertir en tableau si ce n'est pas déjà le cas)
-
+                fetchUserRoles(userId); // Récupérer les rôles de l'utilisateur
             } catch (error) {
                 console.error('Erreur lors du décodage du token:', error);
                 setError('Token invalide. Veuillez vous reconnecter.');
@@ -83,10 +95,10 @@ const CommandesList = () => {
             console.error('Aucun token trouvé dans localStorage');
             setError('Vous devez vous reconnecter.');
         }
-    }, []);
+    }, [fetchUserRoles]);
 
-    // 5- Fonction pour récupérer les commandes depuis l'API
-    const fetchCommandes = async () => {
+    // 6- Fonction pour récupérer les commandes depuis l'API
+    const fetchCommandes = useCallback(async () => {
         setLoading(true);
         try {
             const response = await axios.get(`${BASE_URL}Query/commandes`, {
@@ -102,39 +114,41 @@ const CommandesList = () => {
         } finally {
             setLoading(false); // Désactiver le chargement
         }
-    };
+    }, [BASE_URL]);
 
-    // 6- Utilisation de useEffect pour charger les données au montage du composant
+    // 7- Utilisation de useEffect pour charger les données au montage du composant
     useEffect(() => {
-        fetchCommandes();
-    }, []);
+        if (userId) {
+            fetchCommandes();
+        }
+    }, [userId, fetchCommandes]);
 
-    // 7- Gestion de la recherche
+    // 8- Gestion de la recherche
     const handleSearch = (event) => {
         setSearchTerm(event.target.value); // Mettre à jour le terme de recherche
     };
 
-    // 8- Fonction pour valider une commande
+    // 9- Fonction pour valider une commande
     const handleValidate = async (commande) => {
         setUpdateLoading(commande.id); // Activer le chargement pour cette commande
         try {
             console.log("Validation de la commande :", commande);
 
-            // Make the PATCH request to update the EtatCommande
+            // Requête PATCH pour mettre à jour l'état de la commande
             const response = await axios.patch(
                 `${BASE_URL}Command/${commande.id}`,
-                { etatCommande: "Validée" }, // Request body with the new state
+                { etatCommande: "Validée" }, // Corps de la requête avec le nouvel état
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json', // Important for sending JSON data
+                        'Content-Type': 'application/json', // Important pour envoyer des données JSON
                     },
                 }
             );
 
             console.log("Réponse du serveur :", response.data);
 
-            // Update the state of the commandes
+            // Mettre à jour l'état des commandes
             setCommandes((prevCommandes) =>
                 prevCommandes.map((c) =>
                     c.id === commande.id ? { ...c, etatCommande: "Validée" } : c
@@ -165,34 +179,34 @@ const CommandesList = () => {
         }
     };
 
-    // 9- Filtrer les commandes en fonction du terme de recherche
+    // 10- Filtrer les commandes en fonction du terme de recherche
     const filteredCommandes = commandes.filter((commande) => {
         const searchLower = searchTerm.toLowerCase();
         return commande.composentProductName?.toLowerCase().includes(searchLower);
     });
 
-    // 10- Pagination des commandes filtrées
+    // 11- Pagination des commandes filtrées
     const paginatedCommandes = filteredCommandes.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
 
-    // 11- Gestion du changement de page
+    // 12- Gestion du changement de page
     const handlePageChange = (event, value) => {
         setCurrentPage(value); // Mettre à jour la page courante
     };
 
-    // 12- Affichage du chargement
+    // 13- Affichage du chargement
     if (loading) return (
         <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
             <CircularProgress />
         </Box>
     );
 
-    // 13- Affichage des erreurs
+    // 14- Affichage des erreurs
     if (error) return <Typography color="error">{error}</Typography>;
 
-    // 14- Rendu du composant
+    // 15- Rendu du composant
     return (
         <Container>
             <Typography variant="h4" gutterBottom>
@@ -200,14 +214,12 @@ const CommandesList = () => {
             </Typography>
 
             {/* Afficher l'ID de l'utilisateur et ses rôles */}
-            <Box mb={2}>
-                <Typography variant="h6">
-                    ID de l'Utilisateur Connecté: {userId || 'Non disponible'}
-                </Typography>
-                <Typography variant="h6">
-                    Rôles: {roles.join(', ') || 'Aucun rôle'}
-                </Typography>
-            </Box>
+            <Typography variant="h6" gutterBottom>
+                ID Utilisateur: {userId || 'Non disponible'}
+            </Typography>
+            <Typography variant="h6" gutterBottom>
+                Rôles: {roles.join(', ') || 'Aucun rôle'}
+            </Typography>
 
             {/* Barre de recherche */}
             <Grid container spacing={2} alignItems="center">
@@ -245,7 +257,6 @@ const CommandesList = () => {
                                     <StyledTableCell>Code Site FM1</StyledTableCell>
                                     <StyledTableCell>Device Type FM1</StyledTableCell>
                                     <StyledTableCell>PS SN FM1</StyledTableCell>
-                                    {/*<StyledTableCell>ID FM1 History</StyledTableCell>*/} {/* Hide ID FM1 History Column */}
                                     {/* Masquer la colonne Action si l'utilisateur est un Expert */}
                                     {!roles.includes("Expert") && (
                                         <StyledTableCell>Action</StyledTableCell>
@@ -271,9 +282,8 @@ const CommandesList = () => {
                                         <StyledTableCell>{commande.fM1CodeSite}</StyledTableCell>
                                         <StyledTableCell>{commande.fM1DeviceType}</StyledTableCell>
                                         <StyledTableCell>{commande.fM1PsSn}</StyledTableCell>
-                                        {/*<StyledTableCell>{commande.fM1HistoryId}</StyledTableCell>*/} {/* Hide ID FM1 History Data */}
                                         {/* Masquer la colonne Action si l'utilisateur est un Expert */}
-                                        {!roles.includes("Expert") && (
+                                        {roles.includes("Magasinier") && (
                                             <StyledTableCell>
                                                 {updateLoading === commande.id ? (
                                                     <CircularProgress size={20} />

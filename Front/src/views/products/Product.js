@@ -42,22 +42,26 @@ const Products = () => {
 
   const handleDelete = useCallback(async (productId) => {
     try {
-        console.log("Delete URL:", `${BASE_URL}Query/fm1s/${productId}`);
-
-        await axios.delete(`${BASE_URL}Query/fm1s/${productId}`, { // Corrected URL
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
+      const response = await axios.delete(`${BASE_URL}Query/fm1/${productId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      // Successful deletion
       setProducts(prevProducts => prevProducts.filter(product => product.id !== productId));
-      Swal.fire('Deleted!', 'The car has been deleted.', 'success');
-    } catch (err) {
-      console.error('Error deleting product:', err);
-      Swal.fire('Error', `Failed to delete the car: ${err.message}`, 'error');
+      Swal.fire('Deleted!', 'The fm1 has been deleted.', 'success');
+    } catch (error) {
+        if (error.response && error.response.status === 500) {  // Check for Conflict (409) status code
+            Swal.fire('Error', 'This FM1 has associated commands and cannot be deleted.', 'error');
+        } else {
+            // Handle other errors (e.g., 500 or network errors)
+            console.error('Error deleting product:', error);
+            Swal.fire('Error', `Failed to delete the FM1: ${error.message}`, 'error'); // Generic error message
+        }
     }
   }, [BASE_URL]);
 
   const confirmDelete = useCallback((productId) => {
     Swal.fire({
-      title: 'Are you sure you want to delete this car?',
+      title: 'Are you sure you want to delete this fm1?',
       text: 'This action is irreversible!',
       icon: 'warning',
       showCancelButton: true,
@@ -216,11 +220,14 @@ const Products = () => {
                         <HistoryIcon />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="View Components">
-                      <IconButton color="default" onClick={() => handleShowComponents(product.id)}>
-                        <ViewListIcon />
-                      </IconButton>
-                    </Tooltip>
+                  {/* Conditionally render the "View Components" button */}
+    {roles.includes('Expert') && ( // Check if "Magasinier" is in the roles array
+        <Tooltip title="View Components">
+          <IconButton color="default" onClick={() => handleShowComponents(product.id)}>
+            <ViewListIcon />
+          </IconButton>
+        </Tooltip>
+    )}
                     <Tooltip title="Delete">
                       <IconButton color="error" onClick={() => confirmDelete(product.id)}>
                         <DeleteIcon />

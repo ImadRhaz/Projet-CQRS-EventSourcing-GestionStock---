@@ -62,7 +62,38 @@ namespace GestionFM1.Read.Repositories
                 throw;
             }
         }
-          
+
+
+           public async Task DeleteFM1ByIdAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation($"Suppression du FM1 avec l'ID : {id}.");
+
+                var fm1 = await _context.FM1s.FindAsync(id);
+
+                if (fm1 == null)
+                {
+                    _logger.LogWarning($"Aucun FM1 trouvé avec l'ID : {id}.");
+                    return; // Or throw an exception if you prefer
+                }
+
+                _context.FM1s.Remove(fm1);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation($"FM1 avec l'ID : {id} supprimé avec succès.");
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogError(ex, $"Erreur de concurrence lors de la suppression du FM1 avec l'ID : {id}.");
+                throw; // Rethrow the exception to be handled higher up
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Erreur lors de la suppression du FM1 avec l'ID : {id}.");
+                throw; // Rethrow the exception to be handled higher up
+            }
+        }
 
 
         

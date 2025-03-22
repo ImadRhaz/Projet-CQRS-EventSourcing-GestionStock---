@@ -53,6 +53,35 @@ namespace GestionFM1.Read.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ExcelComposents",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AnComposent = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ComposentName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SnComposent = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TotalAvailable = table.Column<double>(type: "float", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExcelComposents", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ExcelFm1s",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SiteCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TypeDevice = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SnPs = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExcelFm1s", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -170,7 +199,8 @@ namespace GestionFM1.Read.Migrations
                     ExpirationVerification = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ExpertId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    FM1HistoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    FM1HistoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ExcelFm1Id = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -181,6 +211,11 @@ namespace GestionFM1.Read.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_FM1s_ExcelFm1s_ExcelFm1Id",
+                        column: x => x.ExcelFm1Id,
+                        principalTable: "ExcelFm1s",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -342,6 +377,11 @@ namespace GestionFM1.Read.Migrations
                 filter: "[FM1Id] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FM1s_ExcelFm1Id",
+                table: "FM1s",
+                column: "ExcelFm1Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_FM1s_ExpertId",
                 table: "FM1s",
                 column: "ExpertId");
@@ -369,6 +409,9 @@ namespace GestionFM1.Read.Migrations
                 name: "Composents");
 
             migrationBuilder.DropTable(
+                name: "ExcelComposents");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
@@ -382,6 +425,9 @@ namespace GestionFM1.Read.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "ExcelFm1s");
         }
     }
 }

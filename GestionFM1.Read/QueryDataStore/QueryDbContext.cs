@@ -9,7 +9,9 @@ namespace GestionFM1.Read.QueryDataStore
         public DbSet<FM1> FM1s { get; set; }
         public DbSet<Composent> Composents { get; set; }
         public DbSet<Commande> Commandes { get; set; }
-        public DbSet<FM1History> FM1Histories { get; set; } // Ajout du DbSet pour FM1History
+        public DbSet<FM1History> FM1Histories { get; set; } 
+        public DbSet<ExcelFm1> ExcelFm1s { get; set; }
+        public DbSet<ExcelComposent> ExcelComposents { get; set; }
 
         public QueryDbContext(DbContextOptions<QueryDbContext> options) : base(options)
         {
@@ -23,7 +25,8 @@ namespace GestionFM1.Read.QueryDataStore
             modelBuilder.Entity<Composent>().ToTable("Composents");
             modelBuilder.Entity<Commande>().ToTable("Commandes");
             modelBuilder.Entity<FM1History>().ToTable("FM1Histories"); // Ajout de la table FM1Histories
-
+            modelBuilder.Entity<ExcelFm1>().ToTable("ExcelFm1s");
+            modelBuilder.Entity<ExcelComposent>().ToTable("ExcelComposents");
             // Configuration explicite de la propriété Id pour FM1
             modelBuilder.Entity<FM1>()
                 .HasKey(f => f.Id);

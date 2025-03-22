@@ -29,5 +29,11 @@ namespace GestionFM1.Core.Models
         // Relation One-to-One : Un FM1 a un FM1History (et vice-versa)
         public Guid? FM1HistoryId { get; set; }
         public FM1History? FM1History { get; set; }
+
+
+         // Relation avec ExcelFm1
+        public Guid? ExcelFm1Id { get; set; }
+        [ForeignKey("ExcelFm1Id")]
+        public ExcelFm1? ExcelFm1 { get; set; }
     }
 }

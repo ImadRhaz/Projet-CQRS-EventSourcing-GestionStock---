@@ -28,7 +28,8 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
-    IconButton
+    IconButton,
+    Autocomplete
 } from '@mui/material';
 import { BASE_URL } from '../../config';
 import { jwtDecode } from 'jwt-decode';
@@ -60,6 +61,24 @@ const ProductComponents = () => {
 
     const [userId, setUserId] = useState(null);
     const [refresh, setRefresh] = useState(false); // State to trigger refresh
+
+    // État pour stocker les données des composants
+    const [composentOptions, setComposentOptions] = useState([]);
+
+    // Récupérer les données des composants au montage du composant
+    useEffect(() => {
+        const fetchComposentOptions = async () => {
+            try {
+                const response = await axios.get(`${BASE_URL}ExcelFm1/get-all-composent`);
+                setComposentOptions(response.data); // Stocker les données dans l'état
+            } catch (error) {
+                console.error('Erreur lors de la récupération des données des composants', error);
+                setError('Failed to fetch composent data');
+            }
+        };
+
+        fetchComposentOptions();
+    }, []);
 
     // Use useCallback to memoize fetchComposents
     const fetchComposents = useCallback(async () => {
@@ -112,7 +131,7 @@ const ProductComponents = () => {
 
     const handleAddComposent = async () => {
         if (!newComposent.productName || !newComposent.sn) {
-            Swal.fire('Erreur', 'Veuillez remplir tous les champs obligatoires.', 'error');
+            Swal.fire('Erreur', 'Veuillez sélectionner un composant.', 'error');
             return;
         }
 
@@ -260,44 +279,41 @@ const ProductComponents = () => {
     return (
         <Container>
             <Typography variant="h4" gutterBottom>
-                Gestion des Composants (FM1 ID: {id})
+                Gestion des Composants 
             </Typography>
 
-            {}
-            <Box mb={2}>
-                <Typography variant="h6">
-                    ID de l'Utilisateur Connecté: {userId || 'Non disponible'}
-                </Typography>
-
-            </Box>
-
-            {}
             <Box mb={4}>
-                <Typography variant="h6">Ajouter une Composant</Typography>
-                <TextField
-                    label="Product Name"
-                    variant="outlined"
-                    value={newComposent.productName}
-                    onChange={(e) => setNewComposent({ ...newComposent, productName: e.target.value })}
-                    fullWidth
-                    margin="normal"
-                />
-                <TextField
-                    label="Serial Number (SN)"
-                    variant="outlined"
-                    value={newComposent.sn}
-                    onChange={(e) => setNewComposent({ ...newComposent, sn: e.target.value })}
-                    fullWidth
-                    margin="normal"
-                />
-                <TextField
-                    label="Total Available"
-                    variant="outlined"
-                    type="number"
-                    value={newComposent.totalAvailable}
-                    onChange={(e) => setNewComposent({ ...newComposent, totalAvailable: parseInt(e.target.value) })}
-                    fullWidth
-                    margin="normal"
+                <Typography variant="h6">Ajouter un Composant</Typography>
+                <Autocomplete
+                    options={composentOptions}
+                    getOptionLabel={(option) => option.composentName}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Composant"
+                            variant="outlined"
+                            fullWidth
+                            margin="normal"
+                            required
+                        />
+                    )}
+                    onChange={(event, newValue) => {
+                        if (newValue) {
+                            setNewComposent({
+                                ...newComposent,
+                                productName: newValue.composentName,
+                                sn: newValue.snComposent,
+                                totalAvailable: newValue.totalAvailable,
+                            });
+                        } else {
+                            setNewComposent({
+                                ...newComposent,
+                                productName: '',
+                                sn: '',
+                                totalAvailable: 0,
+                            });
+                        }
+                    }}
                 />
                 <FormControl fullWidth margin="normal">
                     <InputLabel id="urgent-or-not-label">Urgent?</InputLabel>
@@ -323,11 +339,11 @@ const ProductComponents = () => {
                 </Button>
             </Box>
 
-             {error && (
-                    <Typography color="error" >
-                         {error}
-                    </Typography>
-               )}
+            {error && (
+                <Typography color="error" >
+                    {error}
+                </Typography>
+            )}
 
             <Typography variant="h5" gutterBottom>
                 Liste des Composants
@@ -358,16 +374,6 @@ const ProductComponents = () => {
                                         {composent.etatCommande ?? 'N/A'}
                                     </TableCell>
                                     <TableCell>
-                                        <Tooltip title="Modifier">
-                                            <IconButton onClick={() => handleEditComposent(composent)}>
-                                                <EditIcon />
-                                            </IconButton>
-                                        </Tooltip>
-                                        <Tooltip title="Supprimer">
-                                            <IconButton color="error" onClick={() => handleDelete(composent.id)}>
-                                                <DeleteIcon />
-                                            </IconButton>
-                                        </Tooltip>
                                         <Tooltip title="Commander">
                                             <Button
                                                 variant="outlined"

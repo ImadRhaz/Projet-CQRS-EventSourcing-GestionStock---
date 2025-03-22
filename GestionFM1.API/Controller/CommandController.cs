@@ -27,7 +27,7 @@ namespace GestionFM1.API.Controllers
             _logger = logger;
             _queryDbContext = queryDbContext; // Assign it
         }
-
+        [AllowAnonymous] 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDTO registerDto)
         {
@@ -58,7 +58,7 @@ namespace GestionFM1.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+       [AllowAnonymous]
          [HttpPost("add-fm1")]
         public async Task<IActionResult> AddFM1([FromBody] AddFM1DTO addFM1Dto)
         {

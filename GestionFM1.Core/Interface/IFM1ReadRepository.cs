@@ -9,5 +9,7 @@ namespace GestionFM1.Core.Interfaces
     {
         Task<FM1> GetFM1ByIdAsync(Guid id);
         Task<IEnumerable<FM1>> GetAllFM1Async();
+        Task DeleteFM1ByIdAsync(Guid id); // Add this line
+
     }
 }
