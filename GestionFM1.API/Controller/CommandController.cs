@@ -8,20 +8,24 @@ using System;
 using GestionFM1.Read.QueryDataStore;
 using Microsoft.EntityFrameworkCore;
 using GestionFM1.Core.Models;  // <--- Ajout de cet using
+using Microsoft.AspNetCore.Authorization;
 
 namespace GestionFM1.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class CommandController : ControllerBase
     {
         private readonly RabbitMqCommandBus _commandBus;
         private readonly ILogger<CommandController> _logger;
+        private readonly QueryDbContext _queryDbContext;  // Inject your DbContext here
 
-        public CommandController(RabbitMqCommandBus commandBus, ILogger<CommandController> logger)
+        public CommandController(RabbitMqCommandBus commandBus, ILogger<CommandController> logger, QueryDbContext queryDbContext) // Inject your DbContext
         {
             _commandBus = commandBus;
             _logger = logger;
+            _queryDbContext = queryDbContext; // Assign it
         }
 
         [HttpPost("register")]
@@ -205,32 +209,65 @@ namespace GestionFM1.API.Controllers
                     return BadRequest(ex.Message);
                  }
             }
+            [HttpPatch("{id}")]
+            public async Task<IActionResult> UpdateCommandeEtat(int id, [FromBody] CommandeUpdateModel updateModel)
+            {
+                if (updateModel == null || string.IsNullOrWhiteSpace(updateModel.EtatCommande))
+                {
+                    return BadRequest("EtatCommande is required in the request body.");
+                }
+
+                _logger.LogInformation($"Attempting to update EtatCommande for Commande ID: {id} to '{updateModel.EtatCommande}'.");
+
+                // Find the Commande in the read database
+                var commande = await _queryDbContext.Commandes.FindAsync(id);
+
+                if (commande == null)
+                {
+                    _logger.LogWarning($"Commande with ID: {id} not found.");
+                    return NotFound();
+                }
+
+                commande.EtatCommande = updateModel.EtatCommande; // Update
+
+                try
+                {
+                    await _queryDbContext.SaveChangesAsync(); // Save in read database
+                    _logger.LogInformation($"Successfully updated EtatCommande for Commande ID: {id} to '{updateModel.EtatCommande}'.");
+                    return NoContent();  // Returns 204 No Content
+                }
+                catch (DbUpdateException ex)
+                {
+                    _logger.LogError(ex, $"Error updating Commande ID: {id}.");
+                    return StatusCode(500, "Error updating EtatCommande. See logs for details.");  // Internal Server Error
+                }
+            }
 
             [HttpPost("add-fm1history")]
-        public async Task<IActionResult> AddFM1History([FromBody] AddFM1HistoryDTO addFM1HistoryDto)
-        {
-            if (!ModelState.IsValid)
+            public async Task<IActionResult> AddFM1History([FromBody] AddFM1HistoryDTO addFM1HistoryDto)
             {
-                _logger.LogWarning("ModelState is invalid.");
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("ModelState is invalid.");
+                    return BadRequest(ModelState);
+                }
 
-            var command = new AddFM1HistoryCommand
-            {
-                FM1Id = addFM1HistoryDto.FM1Id
-            };
+                var command = new AddFM1HistoryCommand
+                {
+                    FM1Id = addFM1HistoryDto.FM1Id
+                };
 
-            try
-            {
-                _logger.LogInformation($"Sending AddFM1HistoryCommand for FM1Id: {addFM1HistoryDto.FM1Id}");
-                await _commandBus.SendCommandAsync(command, "gestionfm1.fm1history.commands");
-                return Ok();
+                try
+                {
+                    _logger.LogInformation($"Sending AddFM1HistoryCommand for FM1Id: {addFM1HistoryDto.FM1Id}");
+                    await _commandBus.SendCommandAsync(command, "gestionfm1.fm1history.commands");
+                    return Ok();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Error while adding FM1History for FM1Id: {addFM1HistoryDto.FM1Id}");
+                    return BadRequest(ex.Message);
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error while adding FM1History for FM1Id: {addFM1HistoryDto.FM1Id}");
-                return BadRequest(ex.Message);
-            }
-        }
     }
 }

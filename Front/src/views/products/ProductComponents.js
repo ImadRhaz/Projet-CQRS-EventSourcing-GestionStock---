@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -61,72 +61,54 @@ const ProductComponents = () => {
     const [userId, setUserId] = useState(null);
     const [refresh, setRefresh] = useState(false); // State to trigger refresh
 
-    //const [roles, setRoles] = useState([]); // Removed
-
-     useEffect(() => {
-         const token = localStorage.getItem('token');
-         if (token) {
-             try {
-                 const decodedToken = jwtDecode(token);
-                  const userId = decodedToken.nameid || decodedToken.sub;
-
-                  if (userId) {
-                       setUserId(userId);
-                       //   fetchUserRoles(userId);
-
-                  } else {
-                       console.error('User ID not found in token');
-                       setError('User ID not found in token.');
-                       setLoading(false);  // Stop loading if cannot get user id
-                  }
-
-             } catch (error) {
-                  console.error('Erreur lors du décodage du token:', error);
-                  setError('Token invalide. Veuillez vous reconnecter.');
-             }
-         } else {
-            console.error('Aucun token trouvé dans localStorage');
-             setError('Vous devez vous reconnecter.');
-         }
-     }, []);
-
-    /*const fetchUserRoles = async (userId) => { // Removed
+    // Use useCallback to memoize fetchComposents
+    const fetchComposents = useCallback(async () => {
+        setLoading(true);
+        setError(null);  // Clear any previous errors
         try {
-            const response = await axios.get(`${BASE_URL}Account/user-roles/${userId}`, {
+            // Use the correct endpoint
+            const response = await axios.get(`${BASE_URL}Query/composents/by-fm1/${id}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
             });
-            console.log('Rôles récupérés:', response.data);
-            setRoles(response.data);
+            setComposents(response.data);  // Set with the data
+            console.log("Composents data:", response.data);
         } catch (error) {
-            console.error('Erreur lors de la récupération des rôles:', error);
-            setError('Erreur lors de la récupération des rôles.');
+            console.error("Erreur lors de la récupération des composants:", error);
+            setError("Échec de la récupération des données !");  // Generic error message
+        } finally {
+            setLoading(false);
         }
-    };*/
+    }, [id]); // Only recreate if `id` changes
 
     useEffect(() => {
-        const fetchComposents = async () => {
-            setLoading(true);
-            try {
-                // Assuming you have an endpoint to fetch components by FM1 ID
-                const response = await axios.get(`${BASE_URL}Query/composents/by-fm1/${id}`,{   headers: {
-
-             // is auth code .is good for function function correct variables and call and send or id. call api we get the session id and validate we validate api auth ok   properties
-
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },});
-                setComposents(response.data);
-            } catch (error) {
-                console.error("Erreur lors de la récupération des composants:", error);
-                setError("Échec de la récupération des données !");
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchComposents();
-    }, [id, refresh]); // Added refresh to the dependency array
+    }, [fetchComposents, refresh]); // fetchComposents is a dependency
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const decodedToken = jwtDecode(token);
+                const userId = decodedToken.nameid || decodedToken.sub;
+
+                if (userId) {
+                    setUserId(userId);
+                } else {
+                    console.error('User ID not found in token');
+                    setError('User ID not found in token.');
+                    setLoading(false);  // Stop loading if cannot get user id
+                }
+            } catch (error) {
+                console.error('Erreur lors du décodage du token:', error);
+                setError('Token invalide. Veuillez vous reconnecter.');
+            }
+        } else {
+            console.error('Aucun token trouvé dans localStorage');
+            setError('Vous devez vous reconnecter.');
+        }
+    }, []);
 
     const handleAddComposent = async () => {
         if (!newComposent.productName || !newComposent.sn) {
@@ -135,7 +117,7 @@ const ProductComponents = () => {
         }
 
         try {
-            const response = await axios.post(`${BASE_URL}Command/add-composent`, newComposent, { // Corrected URL
+            const response = await axios.post(`${BASE_URL}Command/add-composent`, newComposent, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
@@ -151,6 +133,8 @@ const ProductComponents = () => {
                 orderOrNot: 'No',
                 fM1Id: id,
             });
+            setRefresh((prev) => !prev); // Trigger refresh after success
+
         } catch (error) {
             console.error("Erreur lors de l'ajout de la composent:", error);
             Swal.fire('Erreur', 'Une erreur est survenue lors de l\'ajout de la composent.', 'error');
@@ -159,7 +143,7 @@ const ProductComponents = () => {
 
     const handleDelete = async (composentId) => {
         try {
-            const response = await axios.delete(`${BASE_URL}api/Composent/${composentId}`,{
+            const response = await axios.delete(`${BASE_URL}api/Composent/${composentId}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
@@ -168,6 +152,7 @@ const ProductComponents = () => {
                 const updatedComposents = composents.filter(composent => composent.id !== composentId);
                 setComposents(updatedComposents);
                 Swal.fire('Supprimé !', 'La composent a été supprimée.', 'success');
+                setRefresh((prev) => !prev); // Trigger refresh after success
             }
         } catch (error) {
             console.error('Échec de la suppression de la composent', error);
@@ -196,6 +181,10 @@ const ProductComponents = () => {
                 urgentOrNot: editingComposent.urgentOrNot,
                 orderOrNot: editingComposent.orderOrNot,
                 fM1Id: editingComposent.fM1Id,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
             });
 
             const updatedComposents = composents.map(p =>
@@ -205,6 +194,7 @@ const ProductComponents = () => {
 
             Swal.fire('Succès', 'La composent a été modifiée avec succès!', 'success');
             handleCloseEditDialog();
+            setRefresh((prev) => !prev); // Trigger refresh after success
         } catch (error) {
             console.error("Erreur lors de la modification de la composent:", error);
             Swal.fire('Erreur', 'Une erreur est survenue lors de la modification de la composent.', 'error');
@@ -245,7 +235,7 @@ const ProductComponents = () => {
             });
             Swal.fire('Succès', 'La commande a été enregistrée avec succès!', 'success');
             handleCloseCommandeDialog();
-            setRefresh(!refresh); // Trigger the refresh
+            setRefresh((prev) => !prev); // Trigger refresh after success
         } catch (error) {
             console.error("Erreur lors de la création de la commande:", error);
             Swal.fire('Erreur', 'Une erreur est survenue lors de la création de la commande.', 'error');
@@ -333,7 +323,12 @@ const ProductComponents = () => {
                 </Button>
             </Box>
 
-            {}
+             {error && (
+                    <Typography color="error" >
+                         {error}
+                    </Typography>
+               )}
+
             <Typography variant="h5" gutterBottom>
                 Liste des Composants
             </Typography>
@@ -346,20 +341,33 @@ const ProductComponents = () => {
                             <TableCell>Total Available</TableCell>
                             <TableCell>Urgent?</TableCell>
                             <TableCell>Order?</TableCell>
+                            <TableCell>Etat Commande</TableCell>
                             <TableCell>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {paginatedComposents.length > 0 ? (
+                        {paginatedComposents && paginatedComposents.length > 0 ? (
                             paginatedComposents.map((composent) => (
                                 <TableRow key={composent.id} hover>
                                     <TableCell>{composent.productName}</TableCell>
                                     <TableCell>{composent.sn}</TableCell>
                                     <TableCell>{composent.totalAvailable}</TableCell>
                                     <TableCell>{composent.urgentOrNot}</TableCell>
-                                    <TableCell>{composent.orderOrNot}</TableCell> {/* Display the 'orderOrNot' attribute */}
+                                    <TableCell>{composent.orderOrNot}</TableCell>
                                     <TableCell>
-
+                                        {composent.etatCommande ?? 'N/A'}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Tooltip title="Modifier">
+                                            <IconButton onClick={() => handleEditComposent(composent)}>
+                                                <EditIcon />
+                                            </IconButton>
+                                        </Tooltip>
+                                        <Tooltip title="Supprimer">
+                                            <IconButton color="error" onClick={() => handleDelete(composent.id)}>
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        </Tooltip>
                                         <Tooltip title="Commander">
                                             <Button
                                                 variant="outlined"
@@ -374,7 +382,7 @@ const ProductComponents = () => {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={6} align="center">
+                                <TableCell colSpan={7} align="center">
                                     <Typography variant="h6" color="textSecondary">
                                         Aucun composant disponible !
                                     </Typography>
@@ -392,7 +400,7 @@ const ProductComponents = () => {
                 />
             </Box>
 
-            {}
+            {/* Edit Dialog (no changes) */}
             <Dialog open={isEditDialogOpen} onClose={handleCloseEditDialog}>
                 <DialogTitle>Modifier la composant</DialogTitle>
                 <DialogContent>
@@ -451,7 +459,7 @@ const ProductComponents = () => {
                 </DialogActions>
             </Dialog>
 
-            {}
+            {/* Commande Dialog (no changes) */}
             <Dialog open={isCommandeDialogOpen} onClose={handleCloseCommandeDialog}>
                 <DialogTitle>Commander la composant</DialogTitle>
                 <DialogContent>

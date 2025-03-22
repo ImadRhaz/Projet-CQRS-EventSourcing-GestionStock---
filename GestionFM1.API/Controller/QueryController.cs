@@ -9,6 +9,9 @@ using GestionFM1.Read.QueryHandlers;
 using System;
 using GestionFM1.Core.Models;
 using System.Linq;
+using System.Collections.Generic;
+
+
 
 namespace GestionFM1.API.Controllers
 {
@@ -25,21 +28,25 @@ namespace GestionFM1.API.Controllers
         private readonly IQueryHandler<GetComposentByIdQuery, Composent> _getComposentByIdQueryHandler;
         private readonly IQueryHandler<GetAllCommandesQuery, IEnumerable<Commande>> _getAllCommandesQueryHandler;
         private readonly IQueryHandler<GetCommandeByIdQuery, Commande> _getCommandeByIdQueryHandler;
-         private readonly IQueryHandler<GetAllFM1HistoriesQuery, IEnumerable<FM1History>> _getAllFM1HistoriesQueryHandler;
-         private readonly IQueryHandler<GetComposentsByFM1IdQuery, IEnumerable<Composent>> _getComposentsByFM1IdQueryHandler; // Add
+        private readonly IQueryHandler<GetAllFM1HistoriesQuery, IEnumerable<FM1History>> _getAllFM1HistoriesQueryHandler;
+        private readonly IQueryHandler<GetComposentsByFM1IdQuery, IEnumerable<Composent>> _getComposentsByFM1IdQueryHandler;
+        private readonly IQueryHandler<GetFM1HistoryByFM1IdQuery, FM1History> _getFM1HistoryByFM1IdQueryHandler; // Added
 
         public QueryController(
             IQueryHandler<GetUserRolesQuery, IList<string>> getUserRolesQueryHandler,
             LoginQueryHandler loginQueryHandler,
             ILogger<QueryController> logger,
+            
             IQueryHandler<GetAllFM1Query, IEnumerable<FM1>> getAllFM1QueryHandler,
             IQueryHandler<GetFM1ByIdQuery, FM1> getFM1ByIdQueryHandler,
              IQueryHandler<GetAllComposentsQuery, IEnumerable<Composent>> getAllComposentsQueryHandler,
             IQueryHandler<GetComposentByIdQuery, Composent> getComposentByIdQueryHandler,
              IQueryHandler<GetAllCommandesQuery, IEnumerable<Commande>> getAllCommandesQueryHandler,
             IQueryHandler<GetCommandeByIdQuery, Commande> getCommandeByIdQueryHandler,
-             IQueryHandler<GetAllFM1HistoriesQuery, IEnumerable<FM1History>> getAllFM1HistoriesQueryHandler,
-             IQueryHandler<GetComposentsByFM1IdQuery, IEnumerable<Composent>> getComposentsByFM1IdQueryHandler) // Add
+             IQueryHandler<GetComposentsByFM1IdQuery, IEnumerable<Composent>> getComposentsByFM1IdQueryHandler,
+            IQueryHandler<GetAllFM1HistoriesQuery, IEnumerable<FM1History>> getAllFM1HistoriesQueryHandler,
+            IQueryHandler<GetFM1HistoryByFM1IdQuery, FM1History> getFM1HistoryByFM1IdQueryHandler // Added
+            )
         {
             _loginQueryHandler = loginQueryHandler;
             _getUserRolesQueryHandler = getUserRolesQueryHandler;
@@ -50,8 +57,9 @@ namespace GestionFM1.API.Controllers
             _getComposentByIdQueryHandler = getComposentByIdQueryHandler;
             _getAllCommandesQueryHandler = getAllCommandesQueryHandler;
             _getCommandeByIdQueryHandler = getCommandeByIdQueryHandler;
-             _getAllFM1HistoriesQueryHandler = getAllFM1HistoriesQueryHandler;
-             _getComposentsByFM1IdQueryHandler = getComposentsByFM1IdQueryHandler; // Add
+            _getComposentsByFM1IdQueryHandler = getComposentsByFM1IdQueryHandler;
+            _getAllFM1HistoriesQueryHandler = getAllFM1HistoriesQueryHandler;
+            _getFM1HistoryByFM1IdQueryHandler = getFM1HistoryByFM1IdQueryHandler; // Added
         }
 
         [AllowAnonymous]
@@ -105,16 +113,15 @@ namespace GestionFM1.API.Controllers
         [HttpGet("fm1s")]
         public async Task<IActionResult> GetAllFM1()
         {
-            _logger.LogInformation("Récupération de tous les FM1.");
+            _logger.LogInformation($"Récupération de tous les FM1.");
             var result = await _getAllFM1QueryHandler.Handle(new GetAllFM1Query());
 
             if (result == null || !result.Any())
             {
-                _logger.LogWarning("Aucun FM1 trouvé.");
+                _logger.LogWarning($"Aucun FM1 trouvé.");
                 return NotFound();
             }
 
-            // Convertir les FM1 en DTOs
             var fm1Dtos = result.Select(f => new FM1DTO
             {
                 Id = f.Id,
@@ -126,7 +133,7 @@ namespace GestionFM1.API.Controllers
                 Status = f.Status,
                 ExpertId = f.ExpertId,
                 FM1HistoryId = f.FM1HistoryId
-            });
+            }).ToList();
 
             return Ok(fm1Dtos);
         }
@@ -144,7 +151,6 @@ namespace GestionFM1.API.Controllers
                 return NotFound();
             }
 
-            // Convertir le FM1 en DTO
             var fm1Dto = new FM1DTO
             {
                 Id = result.Id,
@@ -164,16 +170,15 @@ namespace GestionFM1.API.Controllers
         [HttpGet("composents")]
         public async Task<IActionResult> GetAllComposents()
         {
-            _logger.LogInformation("Récupération de tous les Composents.");
+            _logger.LogInformation($"Récupération de tous les Composents.");
             var result = await _getAllComposentsQueryHandler.Handle(new GetAllComposentsQuery());
 
             if (result == null || !result.Any())
             {
-                _logger.LogWarning("Aucun Composent trouvé.");
+                _logger.LogWarning($"Aucun Composent trouvé.");
                 return NotFound();
             }
 
-            // Convertir les Composents en DTOs
             var composentDtos = result.Select(c => new ComposentDTO
             {
                 Id = c.Id,
@@ -184,8 +189,9 @@ namespace GestionFM1.API.Controllers
                 UrgentOrNot = c.UrgentOrNot,
                 OrderOrNot = c.OrderOrNot,
                 FM1Id = c.FM1Id,
-                CommandeId = c.CommandeId
-            });
+                CommandeId = c.CommandeId,
+                EtatCommande = c.Commande != null ? c.Commande.EtatCommande : null
+            }).ToList();
 
             return Ok(composentDtos);
         }
@@ -203,7 +209,6 @@ namespace GestionFM1.API.Controllers
                 return NotFound();
             }
 
-            // Convertir le Composent en DTO
             var composentDto = new ComposentDTO
             {
                 Id = result.Id,
@@ -219,7 +224,8 @@ namespace GestionFM1.API.Controllers
 
             return Ok(composentDto);
         }
-         [HttpGet("composents/by-fm1/{fm1Id}")]
+
+        [HttpGet("composents/by-fm1/{fm1Id}")]
         public async Task<IActionResult> GetComposentsByFM1Id(Guid fm1Id)
         {
             _logger.LogInformation($"Récupération des Composents pour le FM1 avec l'ID : {fm1Id}.");
@@ -228,11 +234,10 @@ namespace GestionFM1.API.Controllers
 
             if (result == null || !result.Any())
             {
-                _logger.LogWarning($"Aucun Composent trouvé pour le FM1 avec l'ID : {fm1Id}.");
-                return NotFound();
+                _logger.LogWarning($"Aucun Composent trouvé pour le FM1 avec l'ID : {fm1Id}.  Returning empty list.");
+                return Ok(new List<ComposentDTO>());
             }
 
-            // Convertir les Composents en DTOs
             var composentDtos = result.Select(c => new ComposentDTO
             {
                 Id = c.Id,
@@ -243,26 +248,26 @@ namespace GestionFM1.API.Controllers
                 UrgentOrNot = c.UrgentOrNot,
                 OrderOrNot = c.OrderOrNot,
                 FM1Id = c.FM1Id,
-                CommandeId = c.CommandeId
-            });
+                CommandeId = c.CommandeId,
+                EtatCommande = c.Commande != null ? c.Commande.EtatCommande : null
+            }).ToList();
 
             return Ok(composentDtos);
         }
 
-         [HttpGet("commandes")]
+        [HttpGet("commandes")]
         public async Task<IActionResult> GetAllCommandes()
         {
-            _logger.LogInformation("Récupération de toutes les Commandes.");
-            var result = await _getAllCommandesQueryHandler.Handle(new GetAllCommandesQuery());
+            _logger.LogInformation($"Récupération de toutes les Commandes.");
+            var commandes = await _getAllCommandesQueryHandler.Handle(new GetAllCommandesQuery());
 
-            if (result == null || !result.Any())
+            if (commandes == null || !commandes.Any())
             {
-                _logger.LogWarning("Aucune Commande trouvée.");
+                _logger.LogWarning($"Aucune Commande trouvée.");
                 return NotFound();
             }
 
-            // Convertir les Commandes en DTOs
-            var commandeDtos = result.Select(c => new CommandeDTO
+            var commandeDtos = commandes.Select(c => new CommandeDetailsDTO
             {
                 Id = c.Id,
                 EtatCommande = c.EtatCommande,
@@ -271,8 +276,17 @@ namespace GestionFM1.API.Controllers
                 ExpertId = c.ExpertId,
                 RaisonDeCommande = c.RaisonDeCommande,
                 FM1Id = c.FM1Id,
-                FM1HistoryId = c.FM1HistoryId
-            });
+                FM1HistoryId = c.FM1HistoryId,
+                ExpertNom = c.Expert?.Nom ?? string.Empty,
+                ExpertPrenom = c.Expert?.Prenom ?? string.Empty,
+                ComposentProductName = c.Composent?.ProductName ?? string.Empty,
+                ComposentSN = c.Composent?.SN,
+                ComposentUrgentOrNot = c.Composent?.UrgentOrNot ?? string.Empty,
+                ComposentOrderOrNot = c.Composent?.OrderOrNot,
+                FM1CodeSite = c.FM1?.CodeSite ?? string.Empty,
+                FM1DeviceType = c.FM1?.DeviceType ?? string.Empty,
+                FM1PsSn = c.FM1?.PsSn ?? string.Empty
+            }).ToList();
 
             return Ok(commandeDtos);
         }
@@ -290,7 +304,6 @@ namespace GestionFM1.API.Controllers
                 return NotFound();
             }
 
-            // Convertir la Commande en DTO
             var commandeDto = new CommandeDTO
             {
                 Id = result.Id,
@@ -306,26 +319,85 @@ namespace GestionFM1.API.Controllers
             return Ok(commandeDto);
         }
 
-        [HttpGet("fm1histories")]
-        public async Task<IActionResult> GetAllFM1Histories()
+     [HttpGet("fm1histories")]
+public async Task<IActionResult> GetAllFM1Histories()
+{
+    _logger.LogInformation("Récupération de tous les FM1Histories.");
+    var result = await _getAllFM1HistoriesQueryHandler.Handle(new GetAllFM1HistoriesQuery());
+
+    if (result == null || !result.Any())
+    {
+        _logger.LogWarning("Aucun FM1History trouvé.");
+        return NotFound();
+    }
+
+    var fm1HistoryDtos = result.Select(fh => new FM1HistoryDTO
+    {
+        Id = fh.Id,
+        FM1Id = fh.FM1Id,
+        FM1CodeSite = fh.FM1?.CodeSite ?? string.Empty,
+        FM1DeviceType = fh.FM1?.DeviceType ?? string.Empty,
+        FM1PsSn = fh.FM1?.PsSn ?? string.Empty,
+
+        Commandes = fh.Commandes?.Select(c => new CommandeDTO
         {
-            _logger.LogInformation("Récupération de tous les FM1Histories.");
-            var result = await _getAllFM1HistoriesQueryHandler.Handle(new GetAllFM1HistoriesQuery());
+                Id = c.Id,
+                EtatCommande = c.EtatCommande,
+                DateCmd = c.DateCmd,
+                ComposentId = c.ComposentId,
+                ExpertId = c.ExpertId,
+                RaisonDeCommande = c.RaisonDeCommande,
+                FM1Id = c.FM1Id,
+                FM1HistoryId = c.FM1HistoryId
+        }).ToList() ?? new List<CommandeDTO>()
+    }).ToList();
 
-            if (result == null || !result.Any())
-            {
-                _logger.LogWarning("Aucun FM1History trouvé.");
-                return NotFound();
-            }
+    return Ok(fm1HistoryDtos);
+}
 
-            // Convertir les FM1Histories en DTOs
-            var fm1HistoryDtos = result.Select(fh => new FM1HistoryDTO
-            {
-                Id = fh.Id,
-                FM1Id = fh.FM1Id
-            });
+[HttpGet("fm1histories/{fm1Id}")]
+public async Task<IActionResult> GetFM1HistoryByFM1Id(Guid fm1Id)
+{
+    _logger.LogInformation($"Récupération du FM1History pour le FM1 avec l'ID : {fm1Id}.");
+    var result = await _getFM1HistoryByFM1IdQueryHandler.Handle(new GetFM1HistoryByFM1IdQuery { FM1Id = fm1Id });
 
-            return Ok(fm1HistoryDtos);
-        }
+    if (result == null)
+    {
+        _logger.LogWarning($"Aucun FM1History trouvé pour le FM1 avec l'ID : {fm1Id}.");
+        return NotFound();
+    }
+
+    var fm1HistoryDto = new FM1HistoryDTO
+    {
+        Id = result.Id,
+        FM1Id = result.FM1Id,
+        FM1CodeSite = result.FM1?.CodeSite ?? string.Empty,
+        FM1DeviceType = result.FM1?.DeviceType ?? string.Empty,
+        FM1PsSn = result.FM1?.PsSn ?? string.Empty,
+        Commandes = result.Commandes?.Select(c => new CommandeDTO
+        {
+            Id = c.Id,
+            EtatCommande = c.EtatCommande,
+            DateCmd = c.DateCmd,
+            ComposentId = c.ComposentId,
+            ExpertId = c.ExpertId,
+            RaisonDeCommande = c.RaisonDeCommande,
+            FM1Id = c.FM1Id,
+            FM1HistoryId = c.FM1HistoryId,
+            ComposantProductName = c.Composent?.ProductName ?? string.Empty,
+            ComposantSN = c.Composent?.SN,
+            ComposantUrgentOrNot = c.Composent?.UrgentOrNot ?? string.Empty,
+            ComposantOrderOrNot = c.Composent?.OrderOrNot,
+            ExpertNom = c.Expert?.Nom ?? string.Empty,  // Mapping du nom de l'expert
+            ExpertPrenom = c.Expert?.Prenom ?? string.Empty // Mapping du prénom de l'expert
+        }).ToList() ?? new List<CommandeDTO>()
+    };
+
+    return Ok(fm1HistoryDto);
+}
+
+
+
+
     }
 }

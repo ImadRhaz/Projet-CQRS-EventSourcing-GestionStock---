@@ -6,7 +6,7 @@ const Register = React.lazy(() => import('./views/pages/register/Register'));
 const Login = React.lazy(() => import('./views/pages/login/Login'));
 const ForgotPass = React.lazy(() => import('./views/pages/forgotPassword/ForgotPasswordForm'));
  const Product = React.lazy(() => import('./views/products/Product'));
- //const ProductHistory = React.lazy(() => import('./views/products/ProductHistory'));
+const ProductHistory = React.lazy(() => import('./views/products/ProductHistory'));
 const ChangePassword = React.lazy(() => import('./views/ChangePassword/ChangePasswordForm'));
 const ResetPassword = React.lazy(() => import('./views/pages/resetPassword/ResetPassword'));
 const AddProduct = React.lazy(() => import('./views/products/AddProduct'));
@@ -27,7 +27,7 @@ const routes = [
   { path: '/resetPassword', name: 'ResetPassword', element: ResetPassword },
    { path: '/products', name: 'Product', element: Product },
  { path: '/add-product', name: 'AddProduct', element: AddProduct },
-//   { path: '/product-history/:id', name: 'ProductHistory', element: ProductHistory },
+   { path: '/product-history/:id', name: 'ProductHistory', element: ProductHistory },
  { path: '/product-components/:id', name: 'ProductComponents', element: ProductComponents },
   // { path: '/excelComposents', name: 'ExcelComposents', element: ExcelComposents }, 
   // { path: '/fm1Data', name: 'FM1Data', element: FM1Data }, 

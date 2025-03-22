@@ -172,6 +172,7 @@ builder.Services.AddScoped<IQueryHandler<GetCommandeByIdQuery, Commande>, GetCom
 
 // 11.4 Ajout des Query Handlers pour FM1History
 builder.Services.AddScoped<IQueryHandler<GetAllFM1HistoriesQuery, IEnumerable<FM1History>>, GetAllFM1HistoriesQueryHandler>();
+builder.Services.AddScoped<IQueryHandler<GetFM1HistoryByIdQuery, FM1History>, GetFM1HistoryByIdQueryHandler>();  //Add this 
 
 // 11.5 Registration for  GetComposentsByFM1IdQuery
 
@@ -182,7 +183,10 @@ builder.Services.AddScoped<IComposentReadRepository, ComposentReadRepository>();
 builder.Services.AddScoped<ICommandeReadRepository, CommandeReadRepository>();
 builder.Services.AddScoped<IFM1HistoryReadRepository, FM1HistoryReadRepository>();
 
+builder.Services.AddScoped<IQueryHandler<GetFM1HistoryByFM1IdQuery, FM1History>, GetFM1HistoryByFM1IdQueryHandler>();
+// ... dans la méthode ConfigureServices
 
+builder.Services.AddScoped<IQueryHandler<GetFM1HistoryByFM1IdQuery, FM1History>, GetFM1HistoryByFM1IdQueryHandler>();
 var app = builder.Build();
 
 // 12. Configuration du pipeline HTTP

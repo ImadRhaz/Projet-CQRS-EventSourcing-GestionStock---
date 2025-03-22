@@ -46,7 +46,7 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Voitures',
+    name: 'FM1',
     to: '/products',
     icon: <CIcon icon={cibProductHunt} customClassName="nav-icon" style={iconStyle} />,
     badge: {

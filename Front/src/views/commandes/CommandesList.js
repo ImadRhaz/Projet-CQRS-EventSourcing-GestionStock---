@@ -120,17 +120,21 @@ const CommandesList = () => {
         try {
             console.log("Validation de la commande :", commande);
 
-            const response = await axios.patch(`${BASE_URL}Commande/${commande.id}`, {
-                etatCommande: "Validée", // Mettre à jour l'état de la commande
-            }, {
-                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
+            // Make the PATCH request to update the EtatCommande
+            const response = await axios.patch(
+                `${BASE_URL}Command/${commande.id}`,
+                { etatCommande: "Validée" }, // Request body with the new state
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json', // Important for sending JSON data
+                    },
+                }
+            );
 
             console.log("Réponse du serveur :", response.data);
 
-            // Mettre à jour l'état des commandes
+            // Update the state of the commandes
             setCommandes((prevCommandes) =>
                 prevCommandes.map((c) =>
                     c.id === commande.id ? { ...c, etatCommande: "Validée" } : c
@@ -143,22 +147,28 @@ const CommandesList = () => {
 
             if (err.response) {
                 console.error("Réponse du serveur :", err.response.data);
-                Swal.fire('Erreur', `Erreur du serveur : ${err.response.data.message || "Requête invalide"}`, 'error');
+                Swal.fire(
+                    'Erreur',
+                    `Erreur du serveur : ${err.response.data.message ||
+                    "Requête invalide"}`,
+                    'error'
+                );
             } else {
-                Swal.fire('Erreur', 'Une erreur est survenue lors de la validation de la commande.', 'error');
+                Swal.fire(
+                    'Erreur',
+                    'Une erreur est survenue lors de la validation de la commande.',
+                    'error'
+                );
             }
         } finally {
             setUpdateLoading(false); // Désactiver le chargement
         }
     };
 
-    // 9- Filtrer les commandes en fonction du terme de recherche (par composant)
+    // 9- Filtrer les commandes en fonction du terme de recherche
     const filteredCommandes = commandes.filter((commande) => {
         const searchLower = searchTerm.toLowerCase();
-        return (
-            commande.composentId?.toLowerCase().includes(searchLower) || // Recherche par composant ID
-            commande.raisonDeCommande?.toLowerCase().includes(searchLower)  // Recherche par raison
-        );
+        return commande.composentProductName?.toLowerCase().includes(searchLower);
     });
 
     // 10- Pagination des commandes filtrées
@@ -204,7 +214,7 @@ const CommandesList = () => {
                 <Grid item xs={12}>
                     <StyledTextField
                         variant="outlined"
-                        placeholder="Rechercher par ID du composant ou raison de la commande..."
+                        placeholder="Rechercher par nom du composant..."
                         fullWidth
                         value={searchTerm}
                         onChange={handleSearch}
@@ -226,10 +236,15 @@ const CommandesList = () => {
                                     <StyledTableCell>ID</StyledTableCell>
                                     <StyledTableCell>État</StyledTableCell>
                                     <StyledTableCell>Date Commande</StyledTableCell>
-                                    <StyledTableCell>ID Composant</StyledTableCell>
-                                    <StyledTableCell>ID Expert</StyledTableCell>
+                                    <StyledTableCell>Nom Expert</StyledTableCell>
+                                    <StyledTableCell>Nom Composant</StyledTableCell>
+                                    <StyledTableCell>SN Composant</StyledTableCell>
+                                    <StyledTableCell>Urgent Composant</StyledTableCell>
+                                    <StyledTableCell>Order Composant</StyledTableCell>
                                     <StyledTableCell>Raison</StyledTableCell>
-                                    <StyledTableCell>ID FM1</StyledTableCell>
+                                    <StyledTableCell>Code Site FM1</StyledTableCell>
+                                    <StyledTableCell>Device Type FM1</StyledTableCell>
+                                    <StyledTableCell>PS SN FM1</StyledTableCell>
                                     {/*<StyledTableCell>ID FM1 History</StyledTableCell>*/} {/* Hide ID FM1 History Column */}
                                     {/* Masquer la colonne Action si l'utilisateur est un Expert */}
                                     {!roles.includes("Expert") && (
@@ -247,10 +262,15 @@ const CommandesList = () => {
                                         <StyledTableCell>
                                             {new Date(commande.dateCmd).toLocaleDateString()}
                                         </StyledTableCell>
-                                        <StyledTableCell>{commande.composentId}</StyledTableCell>
-                                        <StyledTableCell>{commande.expertId}</StyledTableCell>
+                                        <StyledTableCell>{commande.expertNom}</StyledTableCell>
+                                        <StyledTableCell>{commande.composentProductName}</StyledTableCell>
+                                        <StyledTableCell>{commande.composentSN}</StyledTableCell>
+                                        <StyledTableCell>{commande.composentUrgentOrNot}</StyledTableCell>
+                                        <StyledTableCell>{commande.composentOrderOrNot}</StyledTableCell>
                                         <StyledTableCell>{commande.raisonDeCommande}</StyledTableCell>
-                                        <StyledTableCell>{commande.fM1Id}</StyledTableCell>
+                                        <StyledTableCell>{commande.fM1CodeSite}</StyledTableCell>
+                                        <StyledTableCell>{commande.fM1DeviceType}</StyledTableCell>
+                                        <StyledTableCell>{commande.fM1PsSn}</StyledTableCell>
                                         {/*<StyledTableCell>{commande.fM1HistoryId}</StyledTableCell>*/} {/* Hide ID FM1 History Data */}
                                         {/* Masquer la colonne Action si l'utilisateur est un Expert */}
                                         {!roles.includes("Expert") && (
@@ -290,4 +310,4 @@ const CommandesList = () => {
     );
 };
 
-export default CommandesList; // Exporte le composant
+export default CommandesList;
