@@ -54,6 +54,7 @@ C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.API\bin\Debug\ne
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.API\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.API\bin\Debug\net8.0\Mono.TextTemplating.dll
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.API\bin\Debug\net8.0\Newtonsoft.Json.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.API\bin\Debug\net8.0\Otp.NET.dll
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.API\bin\Debug\net8.0\QRCoder.dll
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.API\bin\Debug\net8.0\RabbitMQ.Client.dll
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.API\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll

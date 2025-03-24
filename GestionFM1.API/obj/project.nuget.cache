@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "k/jooIKEoMw=",
+  "dgSpecHash": "cRpEfvJORaQ=",
   "success": true,
   "projectFilePath": "C:\\Users\\pc\\Desktop\\Apprendre CQRS EventSourcing\\ici\\GestionFM1.API\\GestionFM1.API.csproj",
   "expectedPackageFiles": [
@@ -94,6 +94,7 @@
     "C:\\Users\\pc\\.nuget\\packages\\microsoft.win32.systemevents\\6.0.0\\microsoft.win32.systemevents.6.0.0.nupkg.sha512",
     "C:\\Users\\pc\\.nuget\\packages\\mono.texttemplating\\2.2.1\\mono.texttemplating.2.2.1.nupkg.sha512",
     "C:\\Users\\pc\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
+    "C:\\Users\\pc\\.nuget\\packages\\otp.net\\1.4.0\\otp.net.1.4.0.nupkg.sha512",
     "C:\\Users\\pc\\.nuget\\packages\\qrcoder\\1.6.0\\qrcoder.1.6.0.nupkg.sha512",
     "C:\\Users\\pc\\.nuget\\packages\\rabbitmq.client\\6.8.1\\rabbitmq.client.6.8.1.nupkg.sha512",
     "C:\\Users\\pc\\.nuget\\packages\\swashbuckle.aspnetcore\\6.5.0\\swashbuckle.aspnetcore.6.5.0.nupkg.sha512",

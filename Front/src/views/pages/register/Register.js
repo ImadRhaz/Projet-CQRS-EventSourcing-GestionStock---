@@ -2,16 +2,7 @@ import React, { useState } from 'react';
 import Select from 'react-select';
 import { BASE_URL } from '../../../config';
 import {
-    CButton,
-    CCard,
-    CCardBody,
-    CCol,
-    CContainer,
-    CForm,
-    CFormInput,
-    CInputGroup,
-    CInputGroupText,
-    CRow,
+    CButton, CCard, CCardBody, CCol, CContainer, CForm, CFormInput, CInputGroup, CInputGroupText, CRow,
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser } from '@coreui/icons';
@@ -26,7 +17,6 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const [userType, setUserType] = useState(null);
 
-    // États pour la 2FA
     const [sharedKey, setSharedKey] = useState('');
     const [qrCodeDataUri, setQrCodeDataUri] = useState('');
     const [show2faSetup, setShow2faSetup] = useState(false);
@@ -51,11 +41,7 @@ const Register = () => {
         }
 
         const data = {
-            nom,
-            prenom,
-            email,
-            password,
-            userType: userType.value,
+            nom, prenom, email, password, userType: userType.value,
         };
 
         try {
@@ -63,11 +49,10 @@ const Register = () => {
                 title: 'Votre demande est en cours',
                 text: 'Veuillez patienter...',
                 allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                },
+                didOpen: () => { Swal.showLoading(); },
             });
 
+            // Étape 1 : Enregistrement de l'utilisateur
             const response = await axios.post(`${BASE_URL}Command/register`, data);
             Swal.close();
 
@@ -79,109 +64,45 @@ const Register = () => {
                     timer: 1500,
                 });
 
-                // Connexion automatique après l'inscription
+                // Étape 2 : Attendre 2 secondes pour permettre la synchronisation
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+
+                // Étape 3 : Activer la 2FA pour l'utilisateur nouvellement créé
                 try {
-                    const loginResponse = await axios.post(`${BASE_URL}account/login`, { email, password });
-                    if (loginResponse.status === 200 && loginResponse.data.token) {
-                        const token = loginResponse.data.token;
-                        localStorage.setItem('token', token);
+                    const enable2faResponse = await axios.post(
+                        `${BASE_URL}account/enable-2fa`,
+                        { email }, // Envoyer l'email pour identifier l'utilisateur
+                    );
 
-                        // Vérifier si le token est bien dans localStorage
-                        const storedToken = localStorage.getItem('token');
-                        console.log("Token trouvé dans localStorage:", storedToken); // Log pour vérifier
-
-                        if (!storedToken) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Erreur',
-                                text: 'Token non trouvé. Veuillez vous reconnecter.',
-                            });
-                            return;
-                        }
-
-                        // Vérification de la validité du token
-                        const decodedToken = JSON.parse(atob(storedToken.split('.')[1])); // Décodage du JWT
-                        const tokenExpiration = decodedToken.exp * 1000; // Convertir en millisecondes
-                        const currentTime = Date.now();
-
-                        if (currentTime > tokenExpiration) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Session expirée',
-                                text: 'Votre session a expiré. Veuillez vous reconnecter.',
-                            });
-                            localStorage.removeItem('token'); // Retirer le token expiré
-                            navigate('/login'); // Rediriger vers la page de connexion
-                            return;
-                        }
-
-                        // Activer la 2FA
-                        console.log("Token utilisé pour activer la 2FA:", storedToken); // Log pour vérifier
-
-                        const enable2faResponse = await axios.post(
-                            `${BASE_URL}account/enable-2fa`,
-                            {},
-                            { headers: { Authorization: `Bearer ${storedToken}` } }
-                        );
-
-                        if (enable2faResponse.status === 200) {
-                            setSharedKey(enable2faResponse.data.sharedKey);
-                            setQrCodeDataUri(enable2faResponse.data.qrCodeDataUri);
-                            setShow2faSetup(true);
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Erreur',
-                                text: 'Erreur lors de l\'activation de la 2FA',
-                            });
-                        }
+                    if (enable2faResponse.status === 200) {
+                        // Afficher le QR code pour la 2FA
+                        setSharedKey(enable2faResponse.data.sharedKey);
+                        setQrCodeDataUri(enable2faResponse.data.qrCodeDataUri);
+                        setShow2faSetup(true);
                     } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erreur',
-                            text: 'Erreur lors de la connexion après l\'enregistrement',
-                        });
+                        console.error("Erreur 2FA (status non 200):", enable2faResponse.data);
+                        const errorMessage = enable2faResponse.data?.message || 'Erreur lors de l\'activation de la 2FA.';
+                        Swal.fire({ icon: 'error', title: 'Erreur 2FA', text: errorMessage });
                     }
                 } catch (error) {
-                    console.error("Erreur lors de l'activation de la 2FA:", error);
-
-                    // Log de l'erreur complète pour voir la réponse
-                    console.log("Réponse complète de l'erreur : ", error.response);
-
-                    if (error.response && error.response.status === 401) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Token expiré ou invalide',
-                            text: 'Votre session a expiré. Veuillez vous reconnecter.',
-                        });
-                        navigate('/login'); // Redirige l'utilisateur vers la page de connexion
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erreur',
-                            text: error.response?.data?.message || 'Erreur inconnue lors de l\'activation de la 2FA',
-                        });
+                    console.error("Erreur 2FA (exception):", error);
+                    let errorMessage = 'Erreur lors de l\'activation de la 2FA.';
+                    if (error.response && error.response.data && error.response.data.message) {
+                        errorMessage = error.response.data.message;
                     }
+                    Swal.fire({ icon: 'error', title: 'Erreur 2FA', text: errorMessage });
                 }
             } else {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Erreur',
-                    text: response.data.message || 'Une erreur inattendue est survenue',
+                    icon: 'error', title: 'Erreur d\'inscription',
+                    text: response.data?.message || 'Erreur inattendue lors de l\'inscription.',
                 });
             }
         } catch (error) {
-            Swal.close();
-
-            const errorMessage =
-                error.response?.data?.message ||
-                (error.response?.data && JSON.stringify(error.response.data)) ||
-                'Une erreur inattendue est survenue';
-
+            console.error("Erreur d'inscription:", error);
             Swal.fire({
-                icon: 'error',
-                title: 'Erreur',
-                text: errorMessage,
+                icon: 'error', title: 'Erreur',
+                text: error.response?.data?.message || 'Erreur inattendue lors de l\'inscription.',
             });
         }
     };
@@ -208,6 +129,7 @@ const Register = () => {
                                                         autoComplete="nom"
                                                         value={nom}
                                                         onChange={(e) => setNom(e.target.value)}
+                                                        required
                                                     />
                                                 </CInputGroup>
                                             </CCol>
@@ -221,6 +143,7 @@ const Register = () => {
                                                         autoComplete="prenom"
                                                         value={prenom}
                                                         onChange={(e) => setPrenom(e.target.value)}
+                                                        required
                                                     />
                                                 </CInputGroup>
                                             </CCol>
@@ -230,10 +153,12 @@ const Register = () => {
                                                 <CInputGroup className="mb-3">
                                                     <CInputGroupText>@</CInputGroupText>
                                                     <CFormInput
+                                                        type="email"
                                                         placeholder="Email"
                                                         autoComplete="email"
                                                         value={email}
                                                         onChange={(e) => setEmail(e.target.value)}
+                                                        required
                                                     />
                                                 </CInputGroup>
                                             </CCol>
@@ -248,6 +173,7 @@ const Register = () => {
                                                 autoComplete="new-password"
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
+                                                required
                                             />
                                         </CInputGroup>
                                         <CRow className="mb-3">
@@ -256,6 +182,7 @@ const Register = () => {
                                                     options={roleOptions}
                                                     onChange={(selectedOption) => setUserType(selectedOption)}
                                                     placeholder="Sélectionnez un rôle"
+                                                    required
                                                 />
                                             </CCol>
                                         </CRow>
@@ -269,7 +196,7 @@ const Register = () => {
                                     <div>
                                         <h2>Configuration de la 2FA</h2>
                                         <p>Scannez ce QR code avec votre application :</p>
-                                        <img src={qrCodeDataUri} alt="QR Code" />
+                                        <img src={qrCodeDataUri} alt="QR Code" style={{ width: '200px', height: '200px' }} />
                                         <p>Ou entrez cette clé manuellement :</p>
                                         <p>{sharedKey}</p>
                                         <CButton color="primary" onClick={() => navigate('/login')}>

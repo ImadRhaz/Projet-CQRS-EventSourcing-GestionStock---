@@ -96,6 +96,10 @@
               "target": "Package",
               "version": "[13.0.3, )"
             },
+            "Otp.NET": {
+              "target": "Package",
+              "version": "[1.4.0, )"
+            },
             "QRCoder": {
               "target": "Package",
               "version": "[1.6.0, )"

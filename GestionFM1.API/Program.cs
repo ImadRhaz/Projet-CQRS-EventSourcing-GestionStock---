@@ -26,6 +26,7 @@ using GestionFM1.Read.QueryHandlers;
 using System.Collections.Generic;
 using GestionFM1.Read.Queries;
 using GestionFM1.Controllers;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Chargement de la configuration
@@ -197,6 +198,8 @@ builder.Services.AddScoped<IQueryHandler<GetFM1HistoryByFM1IdQuery, FM1History>,
 
 // Ajouter le contrôleur pour ExcelFm1
 builder.Services.AddScoped<ExcelFm1Controller>();
+
+
 var app = builder.Build();
 
 // 12. Configuration du pipeline HTTP

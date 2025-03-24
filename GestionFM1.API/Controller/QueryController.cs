@@ -114,6 +114,27 @@ namespace GestionFM1.API.Controllers
 
             return Unauthorized("Erreur lors de la génération du token.");
         }
+
+
+
+
+         [HttpGet("user-roles/{userId}")]
+        public async Task<IActionResult> GetUserRoles(string userId)
+        {
+            _logger.LogInformation($"Récupération des rôles pour l'utilisateur avec l'ID : {userId}.");
+            var result = await _getUserRolesQueryHandler.Handle(new GetUserRolesQuery { UserId = userId });
+
+            if (result == null)
+            {
+                _logger.LogWarning($"Aucun rôle trouvé pour l'utilisateur avec l'ID : {userId}.");
+            }
+            else
+            {
+                _logger.LogInformation($"Rôles récupérés pour l'utilisateur avec l'ID : {userId}: {string.Join(", ", result)}");
+            }
+
+            return Ok(result);
+        }
         [HttpGet("fm1s")]
         public async Task<IActionResult> GetAllFM1()
         {
