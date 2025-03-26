@@ -26,6 +26,10 @@ using GestionFM1.Read.QueryHandlers;
 using System.Collections.Generic;
 using GestionFM1.Read.Queries;
 using GestionFM1.Controllers;
+using GestionFM1.Infrastructure.Notification;
+using Microsoft.AspNetCore.SignalR;
+using RabbitMQ.Client; // Add this
+using GestionFM1.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -85,10 +89,34 @@ builder.Services.AddDbContext<QueryDbContext>(options =>
 builder.Services.AddDbContext<EventStoreDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("EventStoreConnection")));
 
+// Add NotificationDbContext
+builder.Services.AddDbContext<NotificationDbContext>(options => 
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("NotificationDbContext"));
+    options.EnableSensitiveDataLogging();
+    options.LogTo(Console.WriteLine, LogLevel.Information);
+});
+
 // 5. Configuration RabbitMQ
+// Modifier ici pour lire la section correcte
 builder.Services.Configure<RabbitMqConfiguration>(builder.Configuration.GetSection("RabbitMqConfiguration"));
+
 builder.Services.AddSingleton<RabbitMqCommandBus>();
 builder.Services.AddSingleton<RabbitMqEventBus>();
+
+// 5.1 Register RabbitMQ Connection as Singleton
+builder.Services.AddSingleton<IConnection>(sp => {
+    var rabbitMqConfig = sp.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
+    var factory = new ConnectionFactory()
+    {
+        HostName = rabbitMqConfig.HostName,
+        UserName = rabbitMqConfig.UserName,
+        Password = rabbitMqConfig.Password,
+         Port = rabbitMqConfig.Port
+    };
+
+    return factory.CreateConnection();
+});
 
 // 6. Injection des dépendances
 // 6.1 Handlers pour User
@@ -105,7 +133,8 @@ builder.Services.AddScoped<IEventHandler<ComposentCreatedEvent>, ComposentCreate
 
 // 6.4 Handlers pour Commande (Ajout des services pour Commande)
 builder.Services.AddScoped<ICommandHandler<CommandeAddCommand>, CommandeAddCommandHandler>();
-builder.Services.AddScoped<IEventHandler<CommandeCreatedEvent>, CommandeCreatedEventHandler>(); // Garder
+// Garder celui de Read , celui si sera update pour faire la notification.
+builder.Services.AddScoped<IEventHandler<CommandeCreatedEvent>, GestionFM1.Read.EventHandlers.CommandeCreatedEventHandler>();
 
 // 6.5 Handlers pour FM1History
 builder.Services.AddScoped<ICommandHandler<AddFM1HistoryCommand>, AddFM1HistoryCommandHandler>();
@@ -199,7 +228,17 @@ builder.Services.AddScoped<IQueryHandler<GetFM1HistoryByFM1IdQuery, FM1History>,
 // Ajouter le contrôleur pour ExcelFm1
 builder.Services.AddScoped<ExcelFm1Controller>();
 
+//Ajout des services de Notification : 
+// Configuration des services pour la notification
+builder.Services.Configure<NotificationConfiguration>(builder.Configuration.GetSection("NotificationConfiguration"));
 
+//Rabbit
+builder.Services.AddSingleton<INotificationQueueService, NotificationQueueService>();
+
+builder.Services.AddScoped<INotificationStorageService, NotificationStorageService>();
+builder.Services.AddSignalR();
+
+builder.Services.AddHostedService<NotificationWorker>();
 var app = builder.Build();
 
 // 12. Configuration du pipeline HTTP
@@ -218,6 +257,9 @@ app.UseCors("AllowSpecificOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+//Ajout MapHUb
+app.MapHub<NotificationHub>("/notificationHub");
 
 // 13. Création des rôles (Admin, Gestionnaire, Utilisateur)
 using (var scope = app.Services.CreateScope())
@@ -308,6 +350,7 @@ eventBus.Subscribe<ComposentCreatedEvent>("gestionfm1.composent.events", async (
 eventBus.Subscribe<CommandeCreatedEvent>("gestionfm1.commande.events", async (message) =>
 {
     using var scope = app.Services.CreateScope();
+    // Utilisez l'interface IEventHandler<> définie dans GestionFM1.Core
     var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<CommandeCreatedEvent>>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
@@ -331,7 +374,6 @@ eventBus.Subscribe<CommandeCreatedEvent>("gestionfm1.commande.events", async (me
         logger.LogError($"[RabbitMQ] Erreur lors du traitement de CommandeCreatedEvent : {ex.Message}");
     }
 });
-
 // 16. Abonnement aux événements RabbitMQ pour FM1HistoryCreatedEvent
 eventBus.Subscribe<FM1HistoryCreatedEvent>("gestionfm1.fm1history.events", async (message) =>
 {
@@ -361,3 +403,11 @@ eventBus.Subscribe<FM1HistoryCreatedEvent>("gestionfm1.fm1history.events", async
 });
 
 app.Run();
+
+
+
+
+
+
+
+

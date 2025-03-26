@@ -29,11 +29,13 @@ import {
 import { AppHeaderDropdown } from './header/index';
 import './style.css';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { BASE_URL } from '../config';
+import { jwtDecode } from 'jwt-decode';
 
 const AppHeader = () => {
-  const [showNotification, setShowNotification] = useState(true);
   const headerRef = useRef();
-  const navLinkRef = useRef(); // Référence pour l'élément <a> contenant la classe "active"
+  const navLinkRef = useRef();
   const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme');
   const dispatch = useDispatch();
   const sidebarShow = useSelector((state) => state.sidebarShow);
@@ -41,8 +43,10 @@ const AppHeader = () => {
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
-  const isAuthenticated = !!localStorage.getItem('token'); // Vérifier si l'utilisateur est connecté
+  const [allNotifications, setAllNotifications] = useState([]);
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userInfos, setUserInfos] = useState(null)
   useEffect(() => {
     document.addEventListener('scroll', () => {
       headerRef.current &&
@@ -50,64 +54,88 @@ const AppHeader = () => {
     });
   }, []);
 
-  // Charger les notifications de localStorage au montage du composant
-  useEffect(() => {
-    if (isAuthenticated) {
-      const savedNotifications = loadNotificationsFromLocalStorage();
-      setNotifications(savedNotifications);
-      setUnreadNotifications(savedNotifications.length);
-    }
-  }, [isAuthenticated]);
+    useEffect(() => {
+       const fetchUserInfos = async () => {
+          const token = localStorage.getItem('token'); // Récupérer le token depuis le localStorage
+            if (token) {
+                try {
+                     const decodedToken = jwtDecode(token); // Décoder le token
+                    const userId = decodedToken.nameid || decodedToken.sub; // Récupérer l'ID de l'utilisateur
+                    const userRole = decodedToken.role //A adapter avec le nom de votre claim
 
-  // Fonction pour sauvegarder les notifications dans localStorage
-  const saveNotificationsToLocalStorage = (notifications) => {
-    localStorage.setItem('notifications', JSON.stringify(notifications));
-  };
+                    if (!userId) {
+                        throw new Error('ID utilisateur non trouvé dans le token.');
+                    }
+//On va set un objet de userInfos
+           setUserInfos({id :userId, role:userRole})
+                    setIsAuthenticated(true)
+                    console.log("Utilisateur connecté en tant que ",userRole)
+                } catch (error) {
+                    console.error('Erreur lors du décodage du token:', error);
+                    setIsAuthenticated(false);
+                }
+            } else {
+                console.error('Aucun token trouvé dans localStorage');
+                setIsAuthenticated(false);
+            }
+        };
 
-  // Fonction pour charger les notifications de localStorage
-  const loadNotificationsFromLocalStorage = () => {
-    const savedNotifications = localStorage.getItem('notifications');
-    if (savedNotifications) {
-      return JSON.parse(savedNotifications);
-    }
-    return [];
-  };
+    const fetchNotifications = async () => {
+            try {
+                console.log('Récupération de toutes les notifications avec les informations d\'utilisateur');
+                const response = await axios.get(`${BASE_URL}Notifications`);
+              setAllNotifications(response.data);
+                setNotifications(response.data);
+                setUnreadNotifications(response.data.filter(n => !n.isRead).length);
 
-  // Fonction pour basculer l'état du dropdown
-  const toggleDropdown = () => {
+                // Mettre à jour les notifications après avoir récupéré les informations de l'utilisateur
+            } catch (error) {
+                console.error('Erreur lors de la récupération des notifications:', error);
+            }
+        };
+       fetchUserInfos();
+         if (isAuthenticated) {
+             fetchNotifications();
+         }
+
+    }, [isAuthenticated])
+  const toggleDropdown = async () => {
     setDropdownOpen(!dropdownOpen);
-    // Réinitialiser le nombre de notifications non lues
-    setUnreadNotifications(0);
-    // Masquer le compteur de notifications
-    setShowNotification(false);
-    // Supprimer les notifications du localStorage
-    localStorage.removeItem('notifications');
-    // Vider l'état des notifications
-    setNotifications([]);
-    // Retirer la classe "active" de l'élément <a> contenant la classe "notification-counter"
-    if (navLinkRef.current) {
-      navLinkRef.current.classList.remove('active');
-    }
+
+       try {
+             const response = await axios.get(`${BASE_URL}Notifications`);
+            setAllNotifications(response.data);
+
+            await axios.put(`${BASE_URL}Notifications/markAsRead`);
+                setAllNotifications(prevNotifications => {
+                    const updatedNotifications = prevNotifications.map(n => ({ ...n, isRead: true }));
+                    return updatedNotifications;
+                });
+                setNotifications(prevNotifications => {
+                    const updatedNotifications = prevNotifications.map(n => ({ ...n, isRead: true }));
+                    return updatedNotifications;
+                });
+        } catch (error) {
+            console.error("Erreur lors du marquage des notifications comme lues :", error);
+        }
   };
 
-  // Fonction pour gérer le clic sur une notification
-  const handleNotificationClick = (notification) => {
-    // Effectuer toute action nécessaire lorsque l'utilisateur clique sur une notification
-    console.log('Notification clicked:', notification);
-    // Supprimer la notification de la liste
-    setNotifications((prevNotifications) => {
-      const updatedNotifications = prevNotifications.filter((n) => n !== notification);
-      // Sauvegarder les notifications mises à jour dans localStorage
-      saveNotificationsToLocalStorage(updatedNotifications);
-      // Mettre à jour le nombre de notifications non lues
-      setUnreadNotifications(updatedNotifications.length);
-      // Masquer le compteur de notifications si le nombre de notifications non lues est égal à 0
-      if (updatedNotifications.length === 0) {
-        setShowNotification(false);
-      }
-      return updatedNotifications;
-    });
+  const handleNotificationClick = async (notification) => {
+    try {
+      await axios.put(`${BASE_URL}Notifications/markAsRead/${notification.id}`);
+        setAllNotifications((prevNotifications) =>
+              prevNotifications.map((n) =>
+              n.id === notification.id ? { ...n, isRead: true } : n
+          )
+       );
+    } catch (error) {
+      console.error('Erreur lors du marquage de la notification comme lue :', error);
+    }
   };
+  useEffect(() => {
+         setNotifications(allNotifications);
+          setUnreadNotifications(allNotifications.filter(n => !n.isRead).length);
+      }, [allNotifications]);
 
   return (
     <CHeader
@@ -131,25 +159,32 @@ const AppHeader = () => {
           </CNavItem>
         </CHeaderNav>
         <CHeaderNav className="ms-auto">
-          {isAuthenticated && ( // Vérifier si l'utilisateur est connecté
+          {isAuthenticated && userInfos?.role !== 'Expert' && (
             <CDropdown variant="nav-item" placement="bottom-end" isOpen={dropdownOpen} toggle={toggleDropdown}>
               <CDropdownToggle caret={false} onClick={toggleDropdown}>
                 <CIcon icon={cilBell} size="lg" />
-                {showNotification && (
-                  <span className={`notification-counter ${unreadNotifications > 0 ? 'active' : ''}`}>
+                {unreadNotifications > 0 && (
+                  <span className={`notification-counter active`}>
                     {unreadNotifications}
                   </span>
                 )}
               </CDropdownToggle>
-              <CDropdownMenu>
-                {notifications.length === 0 ? (
+              <CDropdownMenu style={{ maxHeight: '300px', overflowY: 'scroll' }}>
+                {allNotifications.length === 0 ? (
                   <CDropdownItem header="true">Pas de notifications</CDropdownItem>
                 ) : (
-                  notifications.map((notification, index) => (
-                    <CDropdownItem key={index} onClick={() => handleNotificationClick(notification)}>
+                  allNotifications.map((notification) => (
+                    <CDropdownItem
+                      key={notification.id}
+                      onClick={() => handleNotificationClick(notification)}
+                    >
                       <div className="notification-item">
-                        <div className="notification-message">{notification.message}</div>
-                        <div className="notification-date">{new Date(notification.date).toLocaleString()}</div>
+                        <div style={{ fontWeight: notification.isRead ? 'normal' : 'bold' }}>
+                          {notification.message}
+                        </div>
+                        <div className="notification-date">
+                          {new Date(notification.createdAt).toLocaleString()}
+                        </div>
                       </div>
                     </CDropdownItem>
                   ))
@@ -158,7 +193,7 @@ const AppHeader = () => {
             </CDropdown>
           )}
           <CNavItem>
-            <CNavLink href="#" ref={navLinkRef}> {/* Utiliser la référence pour l'élément <a> */}
+            <CNavLink href="#" ref={navLinkRef}>
               <CIcon icon={cilList} size="lg" />
             </CNavLink>
           </CNavItem>
@@ -167,7 +202,7 @@ const AppHeader = () => {
               <CIcon icon={cilEnvelopeOpen} size="lg" />
             </CNavLink>
           </CNavItem>
-          {isAuthenticated && ( // Vérifier si l'utilisateur est authentifié
+          {isAuthenticated && (
             <CNavItem>
               <CDropdown variant="nav-item">
                 <CDropdownToggle caret={false}>
@@ -185,7 +220,6 @@ const AppHeader = () => {
           )}
         </CHeaderNav>
 
-        {/* Icône de mode couleur */}
         <CHeaderNav>
           <li className="nav-item py-1">
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
@@ -235,7 +269,6 @@ const AppHeader = () => {
           </li>
           <AppHeaderDropdown />
         </CHeaderNav>
-        {/* Fin de l'icône de mode couleur */}
       </CContainer>
     </CHeader>
   );

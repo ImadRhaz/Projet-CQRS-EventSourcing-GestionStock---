@@ -38,3 +38,5 @@ C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Read\obj\Debug\n
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Read\obj\Debug\net8.0\refint\GestionFM1.Read.dll
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Read\obj\Debug\net8.0\GestionFM1.Read.pdb
 C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Read\obj\Debug\net8.0\ref\GestionFM1.Read.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Read\bin\Debug\net8.0\GestionFM1.Infrastructure.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Read\bin\Debug\net8.0\GestionFM1.Infrastructure.pdb

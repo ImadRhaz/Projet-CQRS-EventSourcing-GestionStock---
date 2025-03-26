@@ -7,15 +7,17 @@ namespace GestionFM1.Core.Models
      public class Commande
     {
         [Key]
+[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string EtatCommande { get; set; } = string.Empty;
         public DateTime DateCmd { get; set; }
 
-        // Clé étrangère vers Composent
-        [ForeignKey("Composent")]  //Important : [ForeignKey] ici
-        public Guid ComposentId { get; set; }
-        public Composent Composent { get; set; } = null!; // Composent concerné par la commande
+     
         
+    public Guid ComposentId { get; set; }
+    public Composent Composent { get; set; }
+
+
         // Clé étrangère vers l'expert (User)
         public string ExpertId { get; set; }
         [ForeignKey("ExpertId")]

@@ -219,6 +219,31 @@ namespace GestionFM1.Read.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Composents",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ItemBaseId = table.Column<int>(type: "int", nullable: false),
+                    ProductName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SN = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TotalAvailable = table.Column<int>(type: "int", nullable: false),
+                    UrgentOrNot = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OrderOrNot = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FM1Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CommandeId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Composents", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Composents_FM1s_FM1Id",
+                        column: x => x.FM1Id,
+                        principalTable: "FM1s",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "FM1Histories",
                 columns: table => new
                 {
@@ -233,7 +258,7 @@ namespace GestionFM1.Read.Migrations
                         column: x => x.FM1Id,
                         principalTable: "FM1s",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -260,47 +285,23 @@ namespace GestionFM1.Read.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
+                        name: "FK_Commandes_Composents_ComposentId",
+                        column: x => x.ComposentId,
+                        principalTable: "Composents",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_Commandes_FM1Histories_FM1HistoryId",
                         column: x => x.FM1HistoryId,
                         principalTable: "FM1Histories",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Commandes_FM1s_FM1Id",
                         column: x => x.FM1Id,
                         principalTable: "FM1s",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Composents",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ItemBaseId = table.Column<int>(type: "int", nullable: false),
-                    ProductName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SN = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TotalAvailable = table.Column<int>(type: "int", nullable: false),
-                    UrgentOrNot = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OrderOrNot = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    FM1Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CommandeId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Composents", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Composents_Commandes_CommandeId",
-                        column: x => x.CommandeId,
-                        principalTable: "Commandes",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_Composents_FM1s_FM1Id",
-                        column: x => x.FM1Id,
-                        principalTable: "FM1s",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -343,6 +344,12 @@ namespace GestionFM1.Read.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Commandes_ComposentId",
+                table: "Commandes",
+                column: "ComposentId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Commandes_ExpertId",
                 table: "Commandes",
                 column: "ExpertId");
@@ -356,13 +363,6 @@ namespace GestionFM1.Read.Migrations
                 name: "IX_Commandes_FM1Id",
                 table: "Commandes",
                 column: "FM1Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Composents_CommandeId",
-                table: "Composents",
-                column: "CommandeId",
-                unique: true,
-                filter: "[CommandeId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Composents_FM1Id",
@@ -406,7 +406,7 @@ namespace GestionFM1.Read.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Composents");
+                name: "Commandes");
 
             migrationBuilder.DropTable(
                 name: "ExcelComposents");
@@ -415,7 +415,7 @@ namespace GestionFM1.Read.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Commandes");
+                name: "Composents");
 
             migrationBuilder.DropTable(
                 name: "FM1Histories");

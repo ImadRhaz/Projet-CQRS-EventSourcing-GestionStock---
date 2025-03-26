@@ -92,7 +92,7 @@ namespace GestionFM1.API.Controllers
             }
         }
 
-
+          [Authorize]
         [HttpPost("add-composent")]
         public async Task<IActionResult> AddComposent([FromBody] AddComposentDTO addComposentDto)
         {

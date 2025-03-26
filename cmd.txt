@@ -20,3 +20,10 @@ dotnet ef database update --project GestionFM1.Write --startup-project GestionFM
 
 dotnet ef migrations add InitialCreate --project GestionFM1.Read --startup-project GestionFM1.API --context QueryDbContext
 dotnet ef database update --project GestionFM1.Read --startup-project GestionFM1.API --context QueryDbContext
+
+
+
+
+
+dotnet ef migrations add InitialNotificationCreate --project GestionFM1.Infrastructure --startup-project GestionFM1.API --context NotificationDbContext -o Data/Migrations
+dotnet ef database update --project GestionFM1.Infrastructure --startup-project GestionFM1.API --context NotificationDbContext

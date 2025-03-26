@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GestionFM1.Read.Migrations
 {
     [DbContext(typeof(QueryDbContext))]
-    [Migration("20250322194713_InitialCreate")]
+    [Migration("20250325010752_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -59,6 +59,9 @@ namespace GestionFM1.Read.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ComposentId")
+                        .IsUnique();
+
                     b.HasIndex("ExpertId");
 
                     b.HasIndex("FM1HistoryId");
@@ -101,10 +104,6 @@ namespace GestionFM1.Read.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CommandeId")
-                        .IsUnique()
-                        .HasFilter("[CommandeId] IS NOT NULL");
 
                     b.HasIndex("FM1Id");
 
@@ -432,6 +431,12 @@ namespace GestionFM1.Read.Migrations
 
             modelBuilder.Entity("GestionFM1.Core.Models.Commande", b =>
                 {
+                    b.HasOne("GestionFM1.Core.Models.Composent", "Composent")
+                        .WithOne("Commande")
+                        .HasForeignKey("GestionFM1.Core.Models.Commande", "ComposentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("GestionFM1.Core.Models.User", "Expert")
                         .WithMany("Commandes")
                         .HasForeignKey("ExpertId")
@@ -441,13 +446,15 @@ namespace GestionFM1.Read.Migrations
                     b.HasOne("GestionFM1.Core.Models.FM1History", "FM1History")
                         .WithMany("Commandes")
                         .HasForeignKey("FM1HistoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("GestionFM1.Core.Models.FM1", "FM1")
                         .WithMany("Commandes")
                         .HasForeignKey("FM1Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Composent");
 
                     b.Navigation("Expert");
 
@@ -458,18 +465,11 @@ namespace GestionFM1.Read.Migrations
 
             modelBuilder.Entity("GestionFM1.Core.Models.Composent", b =>
                 {
-                    b.HasOne("GestionFM1.Core.Models.Commande", "Commande")
-                        .WithOne("Composent")
-                        .HasForeignKey("GestionFM1.Core.Models.Composent", "CommandeId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("GestionFM1.Core.Models.FM1", "FM1")
                         .WithMany("Composents")
                         .HasForeignKey("FM1Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Commande");
 
                     b.Navigation("FM1");
                 });
@@ -495,7 +495,7 @@ namespace GestionFM1.Read.Migrations
                     b.HasOne("GestionFM1.Core.Models.FM1", "FM1")
                         .WithOne("FM1History")
                         .HasForeignKey("GestionFM1.Core.Models.FM1History", "FM1Id")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("FM1");
                 });
@@ -551,10 +551,9 @@ namespace GestionFM1.Read.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("GestionFM1.Core.Models.Commande", b =>
+            modelBuilder.Entity("GestionFM1.Core.Models.Composent", b =>
                 {
-                    b.Navigation("Composent")
-                        .IsRequired();
+                    b.Navigation("Commande");
                 });
 
             modelBuilder.Entity("GestionFM1.Core.Models.FM1", b =>
