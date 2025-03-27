@@ -31,7 +31,7 @@
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
     "@fortawesome/react-fontawesome": "^0.2.1",
-    "@microsoft/signalr": "^8.0.0",
+    "@microsoft/signalr": "^8.0.7",
     "@mui/icons-material": "^5.16.6",
     "@mui/material": "^5.15.18",
     "@mui/styles": "^5.15.18",

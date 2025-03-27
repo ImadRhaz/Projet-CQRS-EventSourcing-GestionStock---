@@ -239,6 +239,8 @@ builder.Services.AddScoped<INotificationStorageService, NotificationStorageServi
 builder.Services.AddSignalR();
 
 builder.Services.AddHostedService<NotificationWorker>();
+// Enregistrement du Worker
+builder.Services.AddHostedService<CommandeValidatedWorker>();
 var app = builder.Build();
 
 // 12. Configuration du pipeline HTTP

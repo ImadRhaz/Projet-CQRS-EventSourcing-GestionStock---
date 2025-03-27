@@ -25,7 +25,6 @@ import {
   cilMoon,
   cilSun,
 } from '@coreui/icons';
-
 import { AppHeaderDropdown } from './header/index';
 import './style.css';
 import { Link } from 'react-router-dom';
@@ -44,9 +43,38 @@ const AppHeader = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const [allNotifications, setAllNotifications] = useState([]);
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userInfos, setUserInfos] = useState(null)
+  const [userInfos, setUserInfos] = useState(null);
+  const refreshIntervalRef = useRef(null);
+
+  // Fonction pour charger les notifications
+  const fetchNotifications = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}Notifications`);
+      setAllNotifications(response.data);
+      filterNotifications(response.data, userInfos?.role);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des notifications:', error);
+    }
+  };
+
+  // Configurer l'intervalle de rafraîchissement toutes les 10 secondes
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Premier chargement immédiat
+      fetchNotifications();
+      
+      // Configurer l'intervalle
+      refreshIntervalRef.current = setInterval(fetchNotifications, 10000);
+    }
+
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
+  }, [isAuthenticated, userInfos?.role]);
+
   useEffect(() => {
     document.addEventListener('scroll', () => {
       headerRef.current &&
@@ -54,88 +82,74 @@ const AppHeader = () => {
     });
   }, []);
 
-    useEffect(() => {
-       const fetchUserInfos = async () => {
-          const token = localStorage.getItem('token'); // Récupérer le token depuis le localStorage
-            if (token) {
-                try {
-                     const decodedToken = jwtDecode(token); // Décoder le token
-                    const userId = decodedToken.nameid || decodedToken.sub; // Récupérer l'ID de l'utilisateur
-                    const userRole = decodedToken.role //A adapter avec le nom de votre claim
+  useEffect(() => {
+    const fetchUserInfos = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const decodedToken = jwtDecode(token);
+          const userId = decodedToken.nameid || decodedToken.sub;
+          const userRole = decodedToken.role;
 
-                    if (!userId) {
-                        throw new Error('ID utilisateur non trouvé dans le token.');
-                    }
-//On va set un objet de userInfos
-           setUserInfos({id :userId, role:userRole})
-                    setIsAuthenticated(true)
-                    console.log("Utilisateur connecté en tant que ",userRole)
-                } catch (error) {
-                    console.error('Erreur lors du décodage du token:', error);
-                    setIsAuthenticated(false);
-                }
-            } else {
-                console.error('Aucun token trouvé dans localStorage');
-                setIsAuthenticated(false);
-            }
-        };
+          if (!userId) {
+            throw new Error('ID utilisateur non trouvé dans le token.');
+          }
 
-    const fetchNotifications = async () => {
-            try {
-                console.log('Récupération de toutes les notifications avec les informations d\'utilisateur');
-                const response = await axios.get(`${BASE_URL}Notifications`);
-              setAllNotifications(response.data);
-                setNotifications(response.data);
-                setUnreadNotifications(response.data.filter(n => !n.isRead).length);
+          setUserInfos({ id: userId, role: userRole });
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Erreur lors du décodage du token:', error);
+          setIsAuthenticated(false);
+        }
+      } else {
+        setIsAuthenticated(false);
+      }
+    };
 
-                // Mettre à jour les notifications après avoir récupéré les informations de l'utilisateur
-            } catch (error) {
-                console.error('Erreur lors de la récupération des notifications:', error);
-            }
-        };
-       fetchUserInfos();
-         if (isAuthenticated) {
-             fetchNotifications();
-         }
+    fetchUserInfos();
+  }, []);
 
-    }, [isAuthenticated])
+  const filterNotifications = (notifications, role) => {
+    const filtered = notifications.filter(notification => {
+      if (role === 'Magasinier') {
+        return notification.message.startsWith('Une nouvelle commande a été créée (ID');
+      }
+      else if (role === 'Expert') {
+        return notification.message.startsWith('La commande #');
+      }
+      return true;
+    });
+    
+    setNotifications(filtered);
+    setUnreadNotifications(filtered.filter(n => !n.isRead).length);
+  };
+
   const toggleDropdown = async () => {
     setDropdownOpen(!dropdownOpen);
 
-       try {
-             const response = await axios.get(`${BASE_URL}Notifications`);
-            setAllNotifications(response.data);
-
-            await axios.put(`${BASE_URL}Notifications/markAsRead`);
-                setAllNotifications(prevNotifications => {
-                    const updatedNotifications = prevNotifications.map(n => ({ ...n, isRead: true }));
-                    return updatedNotifications;
-                });
-                setNotifications(prevNotifications => {
-                    const updatedNotifications = prevNotifications.map(n => ({ ...n, isRead: true }));
-                    return updatedNotifications;
-                });
-        } catch (error) {
-            console.error("Erreur lors du marquage des notifications comme lues :", error);
-        }
+    if (!dropdownOpen) {
+      try {
+        await axios.put(`${BASE_URL}Notifications/markAsRead`);
+        setAllNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      } catch (error) {
+        console.error("Erreur lors du marquage des notifications comme lues :", error);
+      }
+    }
   };
 
   const handleNotificationClick = async (notification) => {
     try {
       await axios.put(`${BASE_URL}Notifications/markAsRead/${notification.id}`);
-        setAllNotifications((prevNotifications) =>
-              prevNotifications.map((n) =>
-              n.id === notification.id ? { ...n, isRead: true } : n
-          )
-       );
+      setAllNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, isRead: true } : n));
     } catch (error) {
       console.error('Erreur lors du marquage de la notification comme lue :', error);
     }
   };
+
   useEffect(() => {
-         setNotifications(allNotifications);
-          setUnreadNotifications(allNotifications.filter(n => !n.isRead).length);
-      }, [allNotifications]);
+    filterNotifications(allNotifications, userInfos?.role);
+  }, [allNotifications, userInfos?.role]);
 
   return (
     <CHeader
@@ -154,12 +168,12 @@ const AppHeader = () => {
         <CHeaderNav className="d-none d-md-flex">
           <CNavItem>
             <CNavLink to="/dashboard" as={NavLink}>
-              Acceuil
+              Accueil
             </CNavLink>
           </CNavItem>
         </CHeaderNav>
         <CHeaderNav className="ms-auto">
-          {isAuthenticated && userInfos?.role !== 'Expert' && (
+          {isAuthenticated && (
             <CDropdown variant="nav-item" placement="bottom-end" isOpen={dropdownOpen} toggle={toggleDropdown}>
               <CDropdownToggle caret={false} onClick={toggleDropdown}>
                 <CIcon icon={cilBell} size="lg" />
@@ -170,10 +184,10 @@ const AppHeader = () => {
                 )}
               </CDropdownToggle>
               <CDropdownMenu style={{ maxHeight: '300px', overflowY: 'scroll' }}>
-                {allNotifications.length === 0 ? (
+                {notifications.length === 0 ? (
                   <CDropdownItem header="true">Pas de notifications</CDropdownItem>
                 ) : (
-                  allNotifications.map((notification) => (
+                  notifications.map((notification) => (
                     <CDropdownItem
                       key={notification.id}
                       onClick={() => handleNotificationClick(notification)}

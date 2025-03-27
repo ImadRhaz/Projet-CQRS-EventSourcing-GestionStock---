@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GestionFM1.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0a7f3e1546bcf7b13874d95288d853f45eca7ea3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+58a6fbb64d2452ded9035d2b66101d627555f62d")]
 [assembly: System.Reflection.AssemblyProductAttribute("GestionFM1.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GestionFM1.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

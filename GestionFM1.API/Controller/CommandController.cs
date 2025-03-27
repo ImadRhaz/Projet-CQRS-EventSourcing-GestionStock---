@@ -7,8 +7,14 @@ using GestionFM1.DTOs;
 using System;
 using GestionFM1.Read.QueryDataStore;
 using Microsoft.EntityFrameworkCore;
-using GestionFM1.Core.Models;  // <--- Ajout de cet using
+using GestionFM1.Core.Models;
 using Microsoft.AspNetCore.Authorization;
+using GestionFM1.Infrastructure.Configuration;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using System.Text;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Exceptions;
 
 namespace GestionFM1.API.Controllers
 {
@@ -19,14 +25,21 @@ namespace GestionFM1.API.Controllers
     {
         private readonly RabbitMqCommandBus _commandBus;
         private readonly ILogger<CommandController> _logger;
-        private readonly QueryDbContext _queryDbContext;  // Inject your DbContext here
+        private readonly QueryDbContext _queryDbContext;
+        private readonly RabbitMqConfiguration _rabbitMqConfig;
 
-        public CommandController(RabbitMqCommandBus commandBus, ILogger<CommandController> logger, QueryDbContext queryDbContext) // Inject your DbContext
+        public CommandController(
+            RabbitMqCommandBus commandBus,
+            ILogger<CommandController> logger,
+            QueryDbContext queryDbContext,
+            IOptions<RabbitMqConfiguration> rabbitMqConfig)
         {
             _commandBus = commandBus;
             _logger = logger;
-            _queryDbContext = queryDbContext; // Assign it
+            _queryDbContext = queryDbContext;
+            _rabbitMqConfig = rabbitMqConfig.Value;
         }
+
         [AllowAnonymous] 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDTO registerDto)
@@ -209,39 +222,64 @@ namespace GestionFM1.API.Controllers
                     return BadRequest(ex.Message);
                  }
             }
+
             [HttpPatch("{id}")]
-            public async Task<IActionResult> UpdateCommandeEtat(int id, [FromBody] CommandeUpdateModel updateModel)
+        public async Task<IActionResult> UpdateCommandeEtat(int id, [FromBody] CommandeUpdateModel updateModel)
+        {
+            if (updateModel == null || string.IsNullOrWhiteSpace(updateModel.EtatCommande))
             {
-                if (updateModel == null || string.IsNullOrWhiteSpace(updateModel.EtatCommande))
-                {
-                    return BadRequest("EtatCommande is required in the request body.");
-                }
-
-                _logger.LogInformation($"Attempting to update EtatCommande for Commande ID: {id} to '{updateModel.EtatCommande}'.");
-
-                // Find the Commande in the read database
-                var commande = await _queryDbContext.Commandes.FindAsync(id);
-
-                if (commande == null)
-                {
-                    _logger.LogWarning($"Commande with ID: {id} not found.");
-                    return NotFound();
-                }
-
-                commande.EtatCommande = updateModel.EtatCommande; // Update
-
-                try
-                {
-                    await _queryDbContext.SaveChangesAsync(); // Save in read database
-                    _logger.LogInformation($"Successfully updated EtatCommande for Commande ID: {id} to '{updateModel.EtatCommande}'.");
-                    return NoContent();  // Returns 204 No Content
-                }
-                catch (DbUpdateException ex)
-                {
-                    _logger.LogError(ex, $"Error updating Commande ID: {id}.");
-                    return StatusCode(500, "Error updating EtatCommande. See logs for details.");  // Internal Server Error
-                }
+                return BadRequest("EtatCommande est requis.");
             }
+
+            var commande = await _queryDbContext.Commandes
+                .Include(c => c.Expert)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (commande == null)
+            {
+                return NotFound();
+            }
+
+            commande.EtatCommande = updateModel.EtatCommande;
+            await _queryDbContext.SaveChangesAsync();
+
+            if (updateModel.EtatCommande == "Validée")
+            {
+                await EnvoyerNotificationCommandeValidee(commande);
+            }
+
+            return NoContent();
+        }
+
+        private async Task EnvoyerNotificationCommandeValidee(Commande commande)
+{
+    try
+    {
+        var message = new
+        {
+            CommandeId = commande.Id,
+            ExpertId = commande.ExpertId,
+            Message = $"Commande #{commande.Id} validée",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _commandBus.SendCommandAsync(
+            message,
+            _rabbitMqConfig.CommandeValidatedQueue);
+
+        _logger.LogInformation($"Notification envoyée pour la commande {commande.Id}");
+    }
+    catch (OperationInterruptedException ex) when (ex.Message.Contains("PRECONDITION_FAILED"))
+    {
+        _logger.LogError(ex, "Erreur de configuration RabbitMQ. La file existe déjà avec des paramètres différents.");
+        // Potentiellement relancer l'exception ou gérer différemment
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Erreur inattendue lors de l'envoi de la notification");
+        throw;
+    }
+}
 
             [HttpPost("add-fm1history")]
             public async Task<IActionResult> AddFM1History([FromBody] AddFM1HistoryDTO addFM1HistoryDto)
