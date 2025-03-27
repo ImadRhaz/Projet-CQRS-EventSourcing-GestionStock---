@@ -1,0 +1,22 @@
+# Node modules
+node_modules/
+
+# Optional: Ignore other common build and system files
+/dist
+/build
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*.tmp
+/tmp
+
+# IDE specific
+.vscode/
+
+# Binaries and compiled files
+bin/
+obj/
+*.dll
+*.pdb
+*.exe

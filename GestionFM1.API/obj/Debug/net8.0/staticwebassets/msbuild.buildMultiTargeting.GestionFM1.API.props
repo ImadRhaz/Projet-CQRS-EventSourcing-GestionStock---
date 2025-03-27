@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\GestionFM1.API.props" />
+</Project>

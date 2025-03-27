@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "GestionFM1.DTOs/1.0.0": {
+        "runtime": {
+          "GestionFM1.DTOs.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "GestionFM1.DTOs/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

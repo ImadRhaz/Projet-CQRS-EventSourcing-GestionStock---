@@ -1,0 +1,59 @@
+/* App.css */
+
+/* Styles généraux */
+.dashboard-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+}
+
+
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center; /* Centre le titre */
+  color: #6297b9; /* Couleur du titre pour le mode clair */
+}
+
+.feature-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feature-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid #6297b9; /* Couleur de séparation pour le mode clair */
+}
+
+.feature-list li:last-child {
+  border-bottom: none;
+}
+
+strong {
+  font-weight: 600;
+}
+
+
+.dark-mode h1 {
+  color: #547e9a; /* Couleur du titre pour le mode sombre */
+}
+
+.dark-mode .feature-list {
+  color: #e0e0e0; /* Couleur du texte des éléments pour le mode sombre */
+}
+
+.dark-mode .feature-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid #333333; /* Couleur de séparation pour le mode sombre */
+}
+
+.dark-mode .feature-list li:last-child {
+  border-bottom: none;
+}
+
+.dark-mode strong {
+  color: #ffffff; /* Couleur du texte en gras pour le mode sombre */
+}

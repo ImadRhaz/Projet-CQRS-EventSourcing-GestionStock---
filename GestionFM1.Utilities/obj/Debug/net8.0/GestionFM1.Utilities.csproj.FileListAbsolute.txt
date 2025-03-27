@@ -1,0 +1,32 @@
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\bin\Debug\net8.0\GestionFM1.Utilities.deps.json
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\bin\Debug\net8.0\GestionFM1.Utilities.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\bin\Debug\net8.0\GestionFM1.Utilities.pdb
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\bin\Debug\net8.0\GestionFM1.Core.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\bin\Debug\net8.0\GestionFM1.Core.pdb
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.csproj.AssemblyReference.cache
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.AssemblyInfoInputs.cache
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.AssemblyInfo.cs
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.csproj.CoreCompileInputs.cache
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.sourcelink.json
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\obj\Debug\net8.0\GestionF.19E154AB.Up2Date
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\obj\Debug\net8.0\refint\GestionFM1.Utilities.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.pdb
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\Gestion FM1\GestionFM1.Utilities\obj\Debug\net8.0\ref\GestionFM1.Utilities.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\bin\Debug\net8.0\GestionFM1.Utilities.deps.json
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\bin\Debug\net8.0\GestionFM1.Utilities.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\bin\Debug\net8.0\GestionFM1.Utilities.pdb
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\bin\Debug\net8.0\GestionFM1.Core.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\bin\Debug\net8.0\GestionFM1.Core.pdb
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.csproj.AssemblyReference.cache
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.AssemblyInfoInputs.cache
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.AssemblyInfo.cs
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.csproj.CoreCompileInputs.cache
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.sourcelink.json
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\obj\Debug\net8.0\GestionF.19E154AB.Up2Date
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\obj\Debug\net8.0\refint\GestionFM1.Utilities.dll
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\obj\Debug\net8.0\GestionFM1.Utilities.pdb
+C:\Users\pc\Desktop\Apprendre CQRS EventSourcing\ici\GestionFM1.Utilities\obj\Debug\net8.0\ref\GestionFM1.Utilities.dll

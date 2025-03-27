@@ -1,0 +1,61 @@
+/* style.css */
+
+/* Style général pour chaque élément de notification */
+.notification-item {
+  display: flex;           /* Utiliser Flexbox pour l'agencement */
+  flex-direction: column;  /* Empiler le message et la date verticalement */
+  padding: 0.5rem;         /* Ajouter un espacement intérieur pour chaque élément */
+  border-bottom: 1px solid #eee; /* Ajouter une bordure en bas pour séparer les éléments */
+}
+
+/* Style pour le message de la notification */
+.notification-message {
+  font-weight: bold;      /* Mettre le texte en gras */
+  color: #333;            /* Définir la couleur du texte */
+  margin-bottom: 0.25rem; /* Ajouter un espacement en dessous */
+}
+
+/* Style pour la date de la notification */
+.notification-date {
+  font-size: 0.75rem;       /* Définir la taille de la police */
+  color: #777;            /* Définir la couleur du texte */
+}
+
+/* Style pour le compteur de notifications (le petit cercle rouge) */
+.notification-counter {
+  background-color: red;   /* Couleur de fond rouge */
+  color: white;           /* Couleur du texte blanc */
+  font-size: 0.7rem;        /* Taille de la police plus petite */
+  padding: 0.2rem 0.4rem;  /* Espacement intérieur réduit */
+  border-radius: 50%;        /* Former un cercle */
+  position: absolute;       /* Positionnement absolu par rapport à l'élément parent */
+  top: 0.2rem;             /* Ajuster la position verticale */
+  right: 0.2rem;           /* Ajuster la position horizontale */
+  transform: translate(50%, -50%); /* Centrer l'élément */
+  display: none;            /* Masqué par défaut */
+}
+
+/* Afficher le compteur lorsque la classe "active" est présente */
+.notification-counter.active {
+  display: inline-block;   /* Afficher comme un élément en ligne */
+}
+
+/* Style pour les éléments de menu déroulant (CDropdownItem) */
+.dropdown-item {
+  padding: 0.5rem 1rem;     /* Espacement intérieur */
+}
+
+/* Style pour les liens dans le menu déroulant */
+.dropdown-link {
+  color: #333;            /* Couleur du texte */
+  text-decoration: none;   /* Supprimer le soulignement */
+  display: block;          /* Afficher comme un bloc pour remplir l'espace */
+  width: 100%;             /* S'assurer que le lien remplit toute la largeur */
+  text-align: left;        /* Aligner le texte à gauche */
+  transition: background-color 0.3s ease; /* Animation de transition */
+}
+
+/* Couleur de fond au survol des liens */
+.dropdown-link:hover {
+  background-color: #f0f0f0;  /* Couleur de fond plus claire */
+}

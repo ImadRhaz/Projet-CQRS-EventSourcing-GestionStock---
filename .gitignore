@@ -1,23 +1,21 @@
-# Node modules
-node_modules/
+# Frontend (Node.js)
+Front/node_modules/
+Front/dist/
+Front/build/
+Front/.env
 
+# Backend (selon votre stack)
+/bin/
+/obj/
+*.dll
+*.pdb
+*.exe
 
-# Optional: Ignore other common build and system files
-/dist
-/build
+# Général
 .DS_Store
 Thumbs.db
 *.log
 *.swp
 *.tmp
 /tmp
-
-# IDE specific
 .vscode/
-
-# Binaries and compiled files
-bin/
-obj/
-*.dll
-*.pdb
-*.exe
