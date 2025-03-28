@@ -223,61 +223,124 @@ namespace GestionFM1.API.Controllers
                  }
             }
 
-            [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateCommandeEtat(int id, [FromBody] CommandeUpdateModel updateModel)
+        [HttpPatch("{id}")]
+public async Task<IActionResult> UpdateCommandeEtat(int id, [FromBody] CommandeUpdateModel updateModel)
+{
+    if (updateModel == null || string.IsNullOrWhiteSpace(updateModel.EtatCommande))
+    {
+        return BadRequest("EtatCommande est requis.");
+    }
+
+    var commande = await _queryDbContext.Commandes
+        .Include(c => c.Expert)
+        .Include(c => c.Composent)
+        .FirstOrDefaultAsync(c => c.Id == id);
+
+    if (commande == null)
+    {
+        return NotFound();
+    }
+
+    if (updateModel.EtatCommande == "Validée")
+    {
+        var (success, message, snComposant) = await VerifierEtMettreAJourStock(commande.Composent);
+        
+        if (!success)
         {
-            if (updateModel == null || string.IsNullOrWhiteSpace(updateModel.EtatCommande))
-            {
-                return BadRequest("EtatCommande est requis.");
-            }
-
-            var commande = await _queryDbContext.Commandes
-                .Include(c => c.Expert)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (commande == null)
-            {
-                return NotFound();
-            }
-
-            commande.EtatCommande = updateModel.EtatCommande;
-            await _queryDbContext.SaveChangesAsync();
-
-            if (updateModel.EtatCommande == "Validée")
-            {
-                await EnvoyerNotificationCommandeValidee(commande);
-            }
-
-            return NoContent();
+            return BadRequest(message);
         }
 
-        private async Task EnvoyerNotificationCommandeValidee(Commande commande)
+        // Stocker le SN du composant validé
+        commande.SnDuComposentValidé = snComposant;
+    }
+
+    commande.EtatCommande = updateModel.EtatCommande;
+    await _queryDbContext.SaveChangesAsync();
+
+    if (updateModel.EtatCommande == "Validée")
+    {
+        await EnvoyerNotificationCommandeValidee(commande);
+    }
+
+    return NoContent();
+}
+
+private async Task<(bool Success, string Message, string SnComposant)> VerifierEtMettreAJourStock(Composent composent)
 {
     try
     {
+        // Cas 1: Si le composant a un SN, on cherche une correspondance exacte
+        if (!string.IsNullOrEmpty(composent.SN))
+        {
+            var composantStockAvecSN = await _queryDbContext.ExcelComposents
+                .FirstOrDefaultAsync(ec => ec.ComposentName == composent.ProductName 
+                                       && ec.SnComposent == composent.SN);
+
+            if (composantStockAvecSN != null && composantStockAvecSN.TotalAvailable >= 1)
+            {
+                composantStockAvecSN.TotalAvailable -= 1;
+                await _queryDbContext.SaveChangesAsync();
+                return (true, "Stock avec SN correspondant mis à jour.", composantStockAvecSN.SnComposent);
+            }
+        }
+
+        // Cas 2: Recherche d'un composant avec le même nom et stock suffisant
+        var composantStockSansSN = await _queryDbContext.ExcelComposents
+            .FirstOrDefaultAsync(ec => ec.ComposentName == composent.ProductName 
+                                   && ec.TotalAvailable >= 1);
+
+        if (composantStockSansSN != null)
+        {
+            composantStockSansSN.TotalAvailable -= 1;
+            await _queryDbContext.SaveChangesAsync();
+            return (true, "Stock sans vérification SN mis à jour.", composantStockSansSN.SnComposent);
+        }
+
+        return (false, "Stock insuffisant pour ce composant. Échec de la commande.", null);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Erreur lors de la vérification/mise à jour du stock");
+        return (false, "Une erreur est survenue lors de la vérification du stock.", null);
+    }
+}
+private async Task EnvoyerNotificationCommandeValidee(Commande commande)
+{
+    try
+    {
+        // Récupérer les détails supplémentaires si nécessaire
+        var composent = await _queryDbContext.Composents
+            .FirstOrDefaultAsync(c => c.Id == commande.ComposentId);
+
         var message = new
         {
             CommandeId = commande.Id,
             ExpertId = commande.ExpertId,
-            Message = $"Commande #{commande.Id} validée",
-            CreatedAt = DateTime.UtcNow
+            ComposentId = commande.ComposentId,
+            ComposentName = composent?.ProductName,
+            SN = composent?.SN,
+            Message = $"Commande #{commande.Id} validée - {composent?.ProductName}",
+            CreatedAt = DateTime.UtcNow,
+            StockUpdated = true // Indique que le stock a été mis à jour
         };
 
         await _commandBus.SendCommandAsync(
             message,
             _rabbitMqConfig.CommandeValidatedQueue);
 
-        _logger.LogInformation($"Notification envoyée pour la commande {commande.Id}");
+        _logger.LogInformation($"Notification envoyée pour la commande {commande.Id} - Stock mis à jour");
     }
     catch (OperationInterruptedException ex) when (ex.Message.Contains("PRECONDITION_FAILED"))
     {
         _logger.LogError(ex, "Erreur de configuration RabbitMQ. La file existe déjà avec des paramètres différents.");
-        // Potentiellement relancer l'exception ou gérer différemment
+        // Vous pourriez ici envoyer un email d'alerte ou journaliser dans une table d'erreurs
+        throw; // Relancer si vous voulez que l'appelant sache qu'il y a eu un problème
     }
     catch (Exception ex)
     {
         _logger.LogError(ex, "Erreur inattendue lors de l'envoi de la notification");
-        throw;
+        // Journaliser l'erreur mais ne pas bloquer le processus
+        // Vous pourriez implémenter un système de retry ici
     }
 }
 

@@ -1,6 +1,6 @@
 using System;
 
-namespace GestionFM1.Core.Models  // Or your preferred namespace
+namespace GestionFM1.DTOs  // Or your preferred namespace
 {
     public class CommandeDetailsDTO
     {

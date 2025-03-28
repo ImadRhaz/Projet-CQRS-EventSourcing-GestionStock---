@@ -71,7 +71,7 @@ namespace GestionFM1.API.Controllers
             _userManager = userManager;
             _configuration = configuration; // Initialisation de IConfiguration
         }
-
+        
         [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
@@ -135,34 +135,34 @@ namespace GestionFM1.API.Controllers
 
             return Ok(result);
         }
-        [HttpGet("fm1s")]
-        public async Task<IActionResult> GetAllFM1()
-        {
-            _logger.LogInformation($"Récupération de tous les FM1.");
-            var result = await _getAllFM1QueryHandler.Handle(new GetAllFM1Query());
+        [Authorize]
+       [HttpGet("fm1s")]
+public async Task<IActionResult> GetAllFM1()
+{
+    _logger.LogInformation($"Récupération de tous les FM1.");
+    var result = await _getAllFM1QueryHandler.Handle(new GetAllFM1Query());
 
-            if (result == null || !result.Any())
-            {
-                _logger.LogWarning($"Aucun FM1 trouvé.");
-                return NotFound();
-            }
+    if (result == null || !result.Any())
+    {
+        _logger.LogWarning($"Aucun FM1 trouvé.");
+        return Ok(new List<FM1DTO>()); // Retourne un tableau vide avec le code 200 OK
+    }
 
-            var fm1Dtos = result.Select(f => new FM1DTO
-            {
-                Id = f.Id,
-                CodeSite = f.CodeSite,
-                DeviceType = f.DeviceType,
-                PsSn = f.PsSn,
-                DateEntre = f.DateEntre,
-                ExpirationVerification = f.ExpirationVerification,
-                Status = f.Status,
-                ExpertId = f.ExpertId,
-                FM1HistoryId = f.FM1HistoryId
-            }).ToList();
+    var fm1Dtos = result.Select(f => new FM1DTO
+    {
+        Id = f.Id,
+        CodeSite = f.CodeSite,
+        DeviceType = f.DeviceType,
+        PsSn = f.PsSn,
+        DateEntre = f.DateEntre,
+        ExpirationVerification = f.ExpirationVerification,
+        Status = f.Status,
+        ExpertId = f.ExpertId,
+        FM1HistoryId = f.FM1HistoryId
+    }).ToList();
 
-            return Ok(fm1Dtos);
-        }
-
+    return Ok(fm1Dtos);
+}
         [HttpGet("fm1/{id}")]
         public async Task<IActionResult> GetFM1ById(Guid id)
         {
@@ -192,34 +192,35 @@ namespace GestionFM1.API.Controllers
             return Ok(fm1Dto);
         }
 
-        [HttpGet("composents")]
-        public async Task<IActionResult> GetAllComposents()
-        {
-            _logger.LogInformation($"Récupération de tous les Composents.");
-            var result = await _getAllComposentsQueryHandler.Handle(new GetAllComposentsQuery());
+[HttpGet("composents")]
+public async Task<IActionResult> GetAllComposents()
+{
+    _logger.LogInformation($"Récupération de tous les Composents.");
+    var result = await _getAllComposentsQueryHandler.Handle(new GetAllComposentsQuery());
 
-            if (result == null || !result.Any())
-            {
-                _logger.LogWarning($"Aucun Composent trouvé.");
-                return NotFound();
-            }
+    if (result == null || !result.Any())
+    {
+        _logger.LogWarning($"Aucun Composent trouvé.");
+        return NotFound();
+    }
 
-            var composentDtos = result.Select(c => new ComposentDTO
-            {
-                Id = c.Id,
-                ItemBaseId = c.ItemBaseId,
-                ProductName = c.ProductName,
-                SN = c.SN,
-                TotalAvailable = c.TotalAvailable,
-                UrgentOrNot = c.UrgentOrNot,
-                OrderOrNot = c.OrderOrNot,
-                FM1Id = c.FM1Id,
-                CommandeId = c.CommandeId,
-                EtatCommande = c.Commande != null ? c.Commande.EtatCommande : null
-            }).ToList();
+    var composentDtos = result.Select(c => new ComposentDTO
+    {
+        Id = c.Id,
+        ItemBaseId = c.ItemBaseId,
+        ProductName = c.ProductName,
+        SN = c.SN,
+        SnDuComposentValidé = c.Commande?.SnDuComposentValidé, // Accès via la commande
+        TotalAvailable = c.TotalAvailable,
+        UrgentOrNot = c.UrgentOrNot,
+        OrderOrNot = c.OrderOrNot,
+        FM1Id = c.FM1Id,
+        CommandeId = c.CommandeId,
+        EtatCommande = c.Commande != null ? c.Commande.EtatCommande : null
+    }).ToList();
 
-            return Ok(composentDtos);
-        }
+    return Ok(composentDtos);
+}
 
         [HttpGet("composent/{id}")]
         public async Task<IActionResult> GetComposentById(Guid id)
@@ -281,41 +282,40 @@ namespace GestionFM1.API.Controllers
         }
 
         [HttpGet("commandes")]
-        public async Task<IActionResult> GetAllCommandes()
-        {
-            _logger.LogInformation($"Récupération de toutes les Commandes.");
-            var commandes = await _getAllCommandesQueryHandler.Handle(new GetAllCommandesQuery());
+public async Task<IActionResult> GetAllCommandes()
+{
+    _logger.LogInformation($"Récupération de toutes les Commandes.");
+    var commandes = await _getAllCommandesQueryHandler.Handle(new GetAllCommandesQuery());
 
-            if (commandes == null || !commandes.Any())
-            {
-                _logger.LogWarning($"Aucune Commande trouvée.");
-                return NotFound();
-            }
+    if (commandes == null || !commandes.Any())
+    {
+        _logger.LogWarning($"Aucune Commande trouvée.");
+        return Ok(new List<CommandeDetailsDTO>()); // Retourne un tableau vide avec le code 200 OK
+    }
 
-            var commandeDtos = commandes.Select(c => new CommandeDetailsDTO
-            {
-                Id = c.Id,
-                EtatCommande = c.EtatCommande,
-                DateCmd = c.DateCmd,
-                ComposentId = c.ComposentId,
-                ExpertId = c.ExpertId,
-                RaisonDeCommande = c.RaisonDeCommande,
-                FM1Id = c.FM1Id,
-                FM1HistoryId = c.FM1HistoryId,
-                ExpertNom = c.Expert?.Nom ?? string.Empty,
-                ExpertPrenom = c.Expert?.Prenom ?? string.Empty,
-                ComposentProductName = c.Composent?.ProductName ?? string.Empty,
-                ComposentSN = c.Composent?.SN,
-                ComposentUrgentOrNot = c.Composent?.UrgentOrNot ?? string.Empty,
-                ComposentOrderOrNot = c.Composent?.OrderOrNot,
-                FM1CodeSite = c.FM1?.CodeSite ?? string.Empty,
-                FM1DeviceType = c.FM1?.DeviceType ?? string.Empty,
-                FM1PsSn = c.FM1?.PsSn ?? string.Empty
-            }).ToList();
+    var commandeDtos = commandes.Select(c => new CommandeDetailsDTO
+    {
+        Id = c.Id,
+        EtatCommande = c.EtatCommande,
+        DateCmd = c.DateCmd,
+        ComposentId = c.ComposentId,
+        ExpertId = c.ExpertId,
+        RaisonDeCommande = c.RaisonDeCommande,
+        FM1Id = c.FM1Id,
+        FM1HistoryId = c.FM1HistoryId,
+        ExpertNom = c.Expert?.Nom ?? string.Empty,
+        ExpertPrenom = c.Expert?.Prenom ?? string.Empty,
+        ComposentProductName = c.Composent?.ProductName ?? string.Empty,
+        ComposentSN = c.Composent?.SN,
+        ComposentUrgentOrNot = c.Composent?.UrgentOrNot ?? string.Empty,
+        ComposentOrderOrNot = c.Composent?.OrderOrNot,
+        FM1CodeSite = c.FM1?.CodeSite ?? string.Empty,
+        FM1DeviceType = c.FM1?.DeviceType ?? string.Empty,
+        FM1PsSn = c.FM1?.PsSn ?? string.Empty
+    }).ToList();
 
-            return Ok(commandeDtos);
-        }
-
+    return Ok(commandeDtos);
+}
         [HttpGet("commande/{id}")]
         public async Task<IActionResult> GetCommandeById(int id)
         {

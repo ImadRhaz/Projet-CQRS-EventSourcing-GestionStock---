@@ -1,6 +1,6 @@
 using System;
 
-namespace GestionFM1.Core.Models
+namespace GestionFM1.DTOs
 {
     public class ComposentDTO
     {
@@ -13,7 +13,7 @@ namespace GestionFM1.Core.Models
         public string? OrderOrNot { get; set; }
         public Guid FM1Id { get; set; }
         public int? CommandeId { get; set; }
-
+   public string? SnDuComposentValidé { get; set; }
         public string? EtatCommande { get; set; } // New property to hold EtatCommande
     }
 }

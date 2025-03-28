@@ -273,7 +273,8 @@ namespace GestionFM1.Read.Migrations
                     ExpertId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     RaisonDeCommande = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FM1Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FM1HistoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    FM1HistoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    SnDuComposentValidé = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {

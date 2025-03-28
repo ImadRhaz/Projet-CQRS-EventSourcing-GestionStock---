@@ -1,7 +1,7 @@
 using System;
 using GestionFM1.DTOs;
 
-namespace GestionFM1.Core.Models
+namespace GestionFM1.DTOs
 {
     public class FM1DTO
     {

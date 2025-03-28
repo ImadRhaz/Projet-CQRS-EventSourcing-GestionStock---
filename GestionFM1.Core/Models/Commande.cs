@@ -34,6 +34,6 @@ namespace GestionFM1.Core.Models
         public Guid? FM1HistoryId { get; set; }
         [ForeignKey("FM1HistoryId")]
         public FM1History? FM1History { get; set; } // L'historique FM1 auquel la commande est liée (si applicable)
-
+        public string? SnDuComposentValidé { get; set; } 
     }
 }

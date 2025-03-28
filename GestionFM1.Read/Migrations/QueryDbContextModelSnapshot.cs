@@ -54,6 +54,9 @@ namespace GestionFM1.Read.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("SnDuComposentValidé")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ComposentId")

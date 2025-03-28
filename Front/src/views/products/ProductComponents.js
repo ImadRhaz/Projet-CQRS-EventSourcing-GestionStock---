@@ -1,328 +1,186 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import {
-    Container,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    Button,
-    Typography,
-    Box,
-    CircularProgress,
-    Pagination,
-    Tooltip,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
-    Select,
-    MenuItem,
-    FormControl,
-    InputLabel,
-    IconButton,
-    Autocomplete
+    Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    Paper, Button, Typography, Box, CircularProgress, Pagination,
+    Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select,
+    MenuItem, FormControl, InputLabel, Autocomplete
 } from '@mui/material';
 import { BASE_URL } from '../../config';
 import { jwtDecode } from 'jwt-decode';
 
 const ProductComponents = () => {
-    const { id } = useParams(); // FM1 ID
+    const { id } = useParams();
     const [composents, setComposents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 7;
 
-    // New composent state
     const [newComposent, setNewComposent] = useState({
         productName: '',
         sn: '',
-        totalAvailable: 0,
         urgentOrNot: 'No',
-        orderOrNot: 'No', // Default value for new components
-        fM1Id: id, // Use FM1 ID directly
+        orderOrNot: 'No',
+        fM1Id: id,
     });
-
-    const [editingComposent, setEditingComposent] = useState(null);
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
     const [isCommandeDialogOpen, setIsCommandeDialogOpen] = useState(false);
     const [selectedComposent, setSelectedComposent] = useState(null);
     const [raisonDeCommande, setRaisonDeCommande] = useState('');
-
     const [userId, setUserId] = useState(null);
-    const [refresh, setRefresh] = useState(false); // State to trigger refresh
-
-    // État pour stocker les données des composants
+    const [refresh, setRefresh] = useState(false);
     const [composentOptions, setComposentOptions] = useState([]);
 
-    // Récupérer les données des composants au montage du composant
+    // Fetch composent options from ExcelComposents
     useEffect(() => {
         const fetchComposentOptions = async () => {
             try {
                 const response = await axios.get(`${BASE_URL}ExcelFm1/get-all-composent`);
-                setComposentOptions(response.data); // Stocker les données dans l'état
+                setComposentOptions(response.data);
             } catch (error) {
-                console.error('Erreur lors de la récupération des données des composants', error);
-                setError('Failed to fetch composent data');
+                console.error('Error fetching composent options:', error);
+                setError('Failed to load composent options');
             }
         };
-
         fetchComposentOptions();
     }, []);
 
-    // Use useCallback to memoize fetchComposents
+    // Fetch FM1 components
     const fetchComposents = useCallback(async () => {
         setLoading(true);
-        setError(null);  // Clear any previous errors
         try {
-            // Use the correct endpoint
             const response = await axios.get(`${BASE_URL}Query/composents/by-fm1/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            setComposents(response.data);  // Set with the data
-            console.log("Composents data:", response.data);
+            setComposents(response.data);
         } catch (error) {
-            console.error("Erreur lors de la récupération des composants:", error);
-            setError("Échec de la récupération des données !");  // Generic error message
+            console.error("Error fetching components:", error);
+            setError("Failed to load components");
         } finally {
             setLoading(false);
         }
-    }, [id]); // Only recreate if `id` changes
+    }, [id]);
 
     useEffect(() => {
         fetchComposents();
-    }, [fetchComposents, refresh]); // fetchComposents is a dependency
+    }, [fetchComposents, refresh]);
 
+    // Get user ID from token
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
-                const decodedToken = jwtDecode(token);
-                const userId = decodedToken.nameid || decodedToken.sub;
-
-                if (userId) {
-                    setUserId(userId);
-                } else {
-                    console.error('User ID not found in token');
-                    setError('User ID not found in token.');
-                    setLoading(false);  // Stop loading if cannot get user id
-                }
+                const decoded = jwtDecode(token);
+                setUserId(decoded.nameid || decoded.sub);
             } catch (error) {
-                console.error('Erreur lors du décodage du token:', error);
-                setError('Token invalide. Veuillez vous reconnecter.');
+                console.error('Token decode error:', error);
+                setError('Invalid token');
             }
-        } else {
-            console.error('Aucun token trouvé dans localStorage');
-            setError('Vous devez vous reconnecter.');
         }
     }, []);
 
     const handleAddComposent = async () => {
-        if (!newComposent.productName || !newComposent.sn) {
-            Swal.fire('Erreur', 'Veuillez sélectionner un composant.', 'error');
+        if (!newComposent.productName) {
+            Swal.fire('Error', 'Please select a component', 'error');
             return;
         }
 
         try {
-            const response = await axios.post(`${BASE_URL}Command/add-composent`, newComposent, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
+            await axios.post(`${BASE_URL}Command/add-composent`, {
+                ProductName: newComposent.productName,
+                SN: newComposent.sn || null,
+                UrgentOrNot: newComposent.urgentOrNot,
+                OrderOrNot: newComposent.orderOrNot,
+                FM1Id: id
+            }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
 
-            setComposents((prev) => [...prev, { ...newComposent, id: response.data.id }]);
-            Swal.fire('Succès', 'La composent a été ajoutée avec succès!', 'success');
+            Swal.fire('Success', 'Component added!', 'success');
+            setRefresh(prev => !prev);
             setNewComposent({
                 productName: '',
                 sn: '',
-                totalAvailable: 0,
                 urgentOrNot: 'No',
                 orderOrNot: 'No',
                 fM1Id: id,
             });
-            setRefresh((prev) => !prev); // Trigger refresh after success
-
         } catch (error) {
-            console.error("Erreur lors de l'ajout de la composent:", error);
-            Swal.fire('Erreur', 'Une erreur est survenue lors de l\'ajout de la composent.', 'error');
+            console.error("Add component error:", error);
+            Swal.fire('Error', 'Failed to add component', 'error');
         }
     };
 
-    const handleDelete = async (composentId) => {
-        try {
-            const response = await axios.delete(`${BASE_URL}api/Composent/${composentId}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-            if (response.status === 204) {
-                const updatedComposents = composents.filter(composent => composent.id !== composentId);
-                setComposents(updatedComposents);
-                Swal.fire('Supprimé !', 'La composent a été supprimée.', 'success');
-                setRefresh((prev) => !prev); // Trigger refresh after success
-            }
-        } catch (error) {
-            console.error('Échec de la suppression de la composent', error);
-            Swal.fire('Erreur', `Échec de la suppression de la composant: ${error.message}`, 'error');
-        }
-    };
-
-    const handleEditComposent = (composent) => {
-        setEditingComposent(composent);
-        setIsEditDialogOpen(true);
-    };
-
-    const handleCloseEditDialog = () => {
-        setIsEditDialogOpen(false);
-        setEditingComposent(null);
-    };
-
-    const handleSaveEdit = async () => {
-        if (!editingComposent) return;
-
-        try {
-            await axios.put(`${BASE_URL}Piece/${editingComposent.id}`, {
-                productName: editingComposent.productName,
-                sn: editingComposent.sn,
-                totalAvailable: editingComposent.totalAvailable,
-                urgentOrNot: editingComposent.urgentOrNot,
-                orderOrNot: editingComposent.orderOrNot,
-                fM1Id: editingComposent.fM1Id,
-            }, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-
-            const updatedComposents = composents.map(p =>
-                p.id === editingComposent.id ? { ...editingComposent } : p
-            );
-            setComposents(updatedComposents);
-
-            Swal.fire('Succès', 'La composent a été modifiée avec succès!', 'success');
-            handleCloseEditDialog();
-            setRefresh((prev) => !prev); // Trigger refresh after success
-        } catch (error) {
-            console.error("Erreur lors de la modification de la composent:", error);
-            Swal.fire('Erreur', 'Une erreur est survenue lors de la modification de la composent.', 'error');
-        }
-    };
-
-    const handleOpenCommandeDialog = (composent) => {
-        setSelectedComposent(composent);
-        setIsCommandeDialogOpen(true);
-    };
-
-    const handleCloseCommandeDialog = () => {
-        setIsCommandeDialogOpen(false);
-        setSelectedComposent(null);
-        setRaisonDeCommande('');
-    };
-
-    const handleSaveCommande = async () => {
+    const handleCommande = async () => {
         if (!selectedComposent || !raisonDeCommande) {
-            Swal.fire('Erreur', 'Veuillez remplir la raison de la commande.', 'error');
+            Swal.fire('Error', 'Please provide a reason', 'error');
             return;
         }
 
-        const commandeData = {
-            etatCommande: "En attente",
-            dateCmd: new Date().toISOString(),
-            composentId: selectedComposent.id,
-            expertId: userId,
-            raisonDeCommande: raisonDeCommande,
-            fM1Id: id,
-        };
-
         try {
-            await axios.post(`${BASE_URL}Command/add-commande`, commandeData, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
+            await axios.post(`${BASE_URL}Command/add-commande`, {
+                etatCommande: "En attente",
+                dateCmd: new Date().toISOString(),
+                composentId: selectedComposent.id,
+                expertId: userId,
+                raisonDeCommande,
+                fM1Id: id,
+            }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
-            Swal.fire('Succès', 'La commande a été enregistrée avec succès!', 'success');
-            handleCloseCommandeDialog();
-            setRefresh((prev) => !prev); // Trigger refresh after success
+
+            Swal.fire('Success', 'Order submitted!', 'success');
+            setIsCommandeDialogOpen(false);
+            setRaisonDeCommande('');
+            setRefresh(prev => !prev);
         } catch (error) {
-            console.error("Erreur lors de la création de la commande:", error);
-            Swal.fire('Erreur', 'Une erreur est survenue lors de la création de la commande.', 'error');
+            console.error("Order error:", error);
+            Swal.fire('Error', 'Failed to submit order', 'error');
         }
     };
 
-    const handlePageChange = (event, value) => {
-        setCurrentPage(value);
-    };
-
-    const getPaginatedComposents = () => {
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        return composents.slice(startIndex, endIndex);
-    };
+    const handlePageChange = (event, value) => setCurrentPage(value);
 
     if (loading) return <CircularProgress />;
     if (error) return <Typography color="error">{error}</Typography>;
 
-    const paginatedComposents = getPaginatedComposents();
-
     return (
         <Container>
-            <Typography variant="h4" gutterBottom>
-                Gestion des Composants 
-            </Typography>
+            <Typography variant="h4" gutterBottom>Components Management</Typography>
 
+            {/* Add Component Section */}
             <Box mb={4}>
-                <Typography variant="h6">Ajouter un Composant</Typography>
+                <Typography variant="h6">Add Component</Typography>
                 <Autocomplete
                     options={composentOptions}
-                    getOptionLabel={(option) => option.composentName}
+                    getOptionLabel={(option) => `${option.composentName} (${option.anComposent})` || ''}
                     renderInput={(params) => (
-                        <TextField
-                            {...params}
-                            label="Composant"
-                            variant="outlined"
-                            fullWidth
-                            margin="normal"
-                            required
-                        />
+                        <TextField {...params} label="Component" required />
                     )}
-                    onChange={(event, newValue) => {
-                        if (newValue) {
-                            setNewComposent({
-                                ...newComposent,
-                                productName: newValue.composentName,
-                                sn: newValue.snComposent,
-                                totalAvailable: newValue.totalAvailable,
-                            });
-                        } else {
-                            setNewComposent({
-                                ...newComposent,
-                                productName: '',
-                                sn: '',
-                                totalAvailable: 0,
-                            });
-                        }
-                    }}
+                    onChange={(e, newValue) => setNewComposent({
+                        ...newComposent,
+                        productName: newValue?.composentName || '',
+                        sn: newValue?.snComposent || ''
+                    })}
+                    fullWidth
                 />
+                
+                <TextField
+                    label="SN (Optional)"
+                    value={newComposent.sn}
+                    onChange={(e) => setNewComposent({...newComposent, sn: e.target.value})}
+                    fullWidth
+                    margin="normal"
+                />
+
                 <FormControl fullWidth margin="normal">
-                    <InputLabel id="urgent-or-not-label">Urgent?</InputLabel>
+                    <InputLabel>Urgent?</InputLabel>
                     <Select
-                        labelId="urgent-or-not-label"
-                        id="urgentOrNot"
                         value={newComposent.urgentOrNot}
-                        onChange={(e) => setNewComposent({ ...newComposent, urgentOrNot: e.target.value })}
-                        label="Urgent?"
+                        onChange={(e) => setNewComposent({...newComposent, urgentOrNot: e.target.value})}
                     >
                         <MenuItem value="Yes">Yes</MenuItem>
                         <MenuItem value="No">No</MenuItem>
@@ -331,157 +189,111 @@ const ProductComponents = () => {
 
                 <Button
                     variant="contained"
-                    color="primary"
                     onClick={handleAddComposent}
-                    style={{ marginTop: '16px' }}
+                    sx={{ mt: 2 }}
                 >
-                    Ajouter Composant
+                    Add Component
                 </Button>
             </Box>
 
-            {error && (
-                <Typography color="error" >
-                    {error}
-                </Typography>
-            )}
-
-            <Typography variant="h5" gutterBottom>
-                Liste des Composants
-            </Typography>
+            {/* Components Table */}
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Product Name</TableCell>
-                            <TableCell>Serial Number (SN)</TableCell>
-                            <TableCell>Total Available</TableCell>
-                            <TableCell>Urgent?</TableCell>
-                            <TableCell>Order?</TableCell>
-                            <TableCell>Etat Commande</TableCell>
+                            <TableCell>Name</TableCell>
+                            <TableCell>Current SN</TableCell>
+                            <TableCell>Validated SN</TableCell>
+                            <TableCell>Urgent</TableCell>
+                            <TableCell>Order Needed</TableCell>
+                            <TableCell>Status</TableCell>
                             <TableCell>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {paginatedComposents && paginatedComposents.length > 0 ? (
-                            paginatedComposents.map((composent) => (
-                                <TableRow key={composent.id} hover>
-                                    <TableCell>{composent.productName}</TableCell>
-                                    <TableCell>{composent.sn}</TableCell>
-                                    <TableCell>{composent.totalAvailable}</TableCell>
-                                    <TableCell>{composent.urgentOrNot}</TableCell>
-                                    <TableCell>{composent.orderOrNot}</TableCell>
-                                    <TableCell>
-                                        {composent.etatCommande ?? 'N/A'}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Tooltip title="Commander">
-                                            <Button
-                                                variant="outlined"
-                                                color="secondary"
-                                                onClick={() => handleOpenCommandeDialog(composent)}
-                                            >
-                                                Commander
-                                            </Button>
-                                        </Tooltip>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={7} align="center">
-                                    <Typography variant="h6" color="textSecondary">
-                                        Aucun composant disponible !
-                                    </Typography>
+                        {composents.slice(
+                            (currentPage-1)*itemsPerPage, 
+                            currentPage*itemsPerPage
+                        ).map(composent => (
+                            <TableRow key={composent.id}>
+                                <TableCell>{composent.productName}</TableCell>
+                                <TableCell>{composent.sn || '-'}</TableCell>
+                                <TableCell>
+                                    {composent.etatCommande === "Validée" 
+                                        ? (composent.snDuComposentValidé || 'No SN available') 
+                                        : 'Not validated'}
+                                </TableCell>
+                                <TableCell>{composent.urgentOrNot}</TableCell>
+                                <TableCell>{composent.orderOrNot}</TableCell>
+                                <TableCell>
+                                    <Box 
+                                        sx={{ 
+                                            color: composent.etatCommande === "Validée" 
+                                                ? 'success.main' 
+                                                : composent.etatCommande === "En attente" 
+                                                    ? 'warning.main' 
+                                                    : 'text.primary'
+                                        }}
+                                    >
+                                        {composent.etatCommande || 'N/A'}
+                                    </Box>
+                                </TableCell>
+                                <TableCell>
+                                    <Button
+                                        variant="outlined"
+                                        onClick={() => {
+                                            setSelectedComposent(composent);
+                                            setIsCommandeDialogOpen(true);
+                                        }}
+                                        disabled={composent.etatCommande === "Validée"}
+                                        color={composent.etatCommande === "Validée" ? "success" : "primary"}
+                                    >
+                                        {composent.etatCommande === "Validée" ? "Validated" : "Order"}
+                                    </Button>
                                 </TableCell>
                             </TableRow>
-                        )}
+                        ))}
                     </TableBody>
                 </Table>
             </TableContainer>
-            <Box mt={2} display="flex" justifyContent="center">
-                <Pagination
-                    count={Math.ceil(composents.length / itemsPerPage)}
-                    page={currentPage}
-                    onChange={handlePageChange}
-                />
-            </Box>
 
-            {/* Edit Dialog (no changes) */}
-            <Dialog open={isEditDialogOpen} onClose={handleCloseEditDialog}>
-                <DialogTitle>Modifier la composant</DialogTitle>
+            {/* Pagination */}
+            <Pagination
+                count={Math.ceil(composents.length / itemsPerPage)}
+                page={currentPage}
+                onChange={handlePageChange}
+                sx={{ mt: 2, justifyContent: 'center' }}
+            />
+
+            {/* Order Dialog */}
+            <Dialog open={isCommandeDialogOpen} onClose={() => setIsCommandeDialogOpen(false)}>
+                <DialogTitle>
+                    {selectedComposent?.productName}
+                    {selectedComposent?.sn && ` (Current SN: ${selectedComposent.sn})`}
+                    {selectedComposent?.etatCommande === "Validée" && 
+                     ` | Validated SN: ${selectedComposent.snDuComposentValidé || 'No SN available'}`}
+                </DialogTitle>
                 <DialogContent>
                     <TextField
-                        label="Product Name"
-                        value={editingComposent?.productName || ''}
-                        onChange={(e) => setEditingComposent({ ...editingComposent, productName: e.target.value })}
-                        fullWidth
-                        margin="normal"
-                    />
-                    <TextField
-                        label="Serial Number (SN)"
-                        value={editingComposent?.sn || ''}
-                        onChange={(e) => setEditingComposent({ ...editingComposent, sn: e.target.value })}
-                        fullWidth
-                        margin="normal"
-                    />
-                    <TextField
-                        label="Total Available"
-                        value={editingComposent?.totalAvailable || 0}
-                        onChange={(e) => setEditingComposent({ ...editingComposent, totalAvailable: parseInt(e.target.value) })}
-                        fullWidth
-                        margin="normal"
-                        type="number"
-                    />
-                    <FormControl fullWidth margin="normal">
-                        <InputLabel id="urgent-or-not-edit-label">Urgent?</InputLabel>
-                        <Select
-                            labelId="urgent-or-not-edit-label"
-                            id="urgentOrNotEdit"
-                            value={editingComposent?.urgentOrNot || 'No'}
-                            onChange={(e) => setEditingComposent({ ...editingComposent, urgentOrNot: e.target.value })}
-                            label="Urgent?"
-                        >
-                            <MenuItem value="Yes">Yes</MenuItem>
-                            <MenuItem value="No">No</MenuItem>
-                        </Select>
-                    </FormControl>
-                    <FormControl fullWidth margin="normal">
-                        <InputLabel id="order-or-not-edit-label">Order?</InputLabel>
-                        <Select
-                            labelId="order-or-not-edit-label"
-                            id="orderOrNotEdit"
-                            value={editingComposent?.orderOrNot || 'No'}
-                            onChange={(e) => setEditingComposent({ ...editingComposent, orderOrNot: e.target.value })}
-                            label="Order?"
-                        >
-                            <MenuItem value="Yes">Yes</MenuItem>
-                            <MenuItem value="No">No</MenuItem>
-                        </Select>
-                    </FormControl>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseEditDialog}>Annuler</Button>
-                    <Button onClick={handleSaveEdit} color="primary">Enregistrer</Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Commande Dialog (no changes) */}
-            <Dialog open={isCommandeDialogOpen} onClose={handleCloseCommandeDialog}>
-                <DialogTitle>Commander la composant</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        label="Raison de la Commande"
-                        value={raisonDeCommande}
-                        onChange={(e) => setRaisonDeCommande(e.target.value)}
-                        fullWidth
-                        margin="normal"
+                        label="Order Reason"
                         multiline
                         rows={4}
+                        fullWidth
+                        value={raisonDeCommande}
+                        onChange={(e) => setRaisonDeCommande(e.target.value)}
+                        sx={{ mt: 2 }}
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseCommandeDialog}>Annuler</Button>
-                    <Button onClick={handleSaveCommande} color="primary">Enregistrer</Button>
+                    <Button onClick={() => setIsCommandeDialogOpen(false)}>Cancel</Button>
+                    <Button 
+                        onClick={handleCommande}
+                        variant="contained"
+                        color="primary"
+                        disabled={selectedComposent?.etatCommande === "Validée"}
+                    >
+                        {selectedComposent?.etatCommande === "Validée" ? "Already Validated" : "Confirm Order"}
+                    </Button>
                 </DialogActions>
             </Dialog>
         </Container>

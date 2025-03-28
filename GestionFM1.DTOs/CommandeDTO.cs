@@ -1,6 +1,6 @@
 using System;
 
-namespace GestionFM1.Core.Models
+namespace GestionFM1.DTOs
 {
     public class CommandeDTO
     {
@@ -21,6 +21,8 @@ namespace GestionFM1.Core.Models
 
         public string ExpertNom { get; set; } = string.Empty;
     public string ExpertPrenom { get; set; } = string.Empty;
+    public string? SnDuComposentValidé { get; set; }
+    
 
     }
 }

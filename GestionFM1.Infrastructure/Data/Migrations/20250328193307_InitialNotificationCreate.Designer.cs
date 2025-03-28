@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GestionFM1.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(NotificationDbContext))]
-    [Migration("20250327163327_InitialNotificationCreate")]
+    [Migration("20250328193307_InitialNotificationCreate")]
     partial class InitialNotificationCreate
     {
         /// <inheritdoc />

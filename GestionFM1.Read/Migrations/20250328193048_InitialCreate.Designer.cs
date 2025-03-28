@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GestionFM1.Read.Migrations
 {
     [DbContext(typeof(QueryDbContext))]
-    [Migration("20250325010752_InitialCreate")]
+    [Migration("20250328193048_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -55,6 +55,9 @@ namespace GestionFM1.Read.Migrations
 
                     b.Property<string>("RaisonDeCommande")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SnDuComposentValidé")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
