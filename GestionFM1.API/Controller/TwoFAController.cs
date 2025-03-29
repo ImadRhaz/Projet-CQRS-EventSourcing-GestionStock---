@@ -16,14 +16,14 @@ using OtpNet; // Ajout de l'espace de noms OtpNet
 namespace GestionFM1.Controllers
 {
     [ApiController]
-    [Route("api/account")]
-    public class AccountController : ControllerBase
+    [Route("api/2fa")] // Mettez à jour la route pour refléter le nouveau nom du contrôleur
+    public class TwoFAController : ControllerBase // Renommez la classe en TwoFAController
     {
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
-        private readonly ILogger<AccountController> _logger;
+        private readonly ILogger<TwoFAController> _logger; // Mettez à jour le type de logger
 
-        public AccountController(UserManager<User> userManager, IConfiguration configuration, ILogger<AccountController> logger)
+        public TwoFAController(UserManager<User> userManager, IConfiguration configuration, ILogger<TwoFAController> logger) // Mettez à jour le type de logger
         {
             _userManager = userManager;
             _configuration = configuration;

@@ -147,6 +147,8 @@ builder.Services.AddScoped<FM1WriteRepository>();
 builder.Services.AddScoped<ComposentWriteRepository>();
 builder.Services.AddScoped<CommandeWriteRepository>(); // Ajout de CommandeWriteRepository
 builder.Services.AddScoped<FM1HistoryWriteRepository>();
+builder.Services.AddScoped<TwoFAController>();
+builder.Services.AddScoped<ImportExcelController>();
 
 // 7. Configuration Identity
 
@@ -225,8 +227,7 @@ builder.Services.AddScoped<IQueryHandler<GetFM1HistoryByFM1IdQuery, FM1History>,
 
 builder.Services.AddScoped<IQueryHandler<GetFM1HistoryByFM1IdQuery, FM1History>, GetFM1HistoryByFM1IdQueryHandler>();
 
-// Ajouter le contrôleur pour ExcelFm1
-builder.Services.AddScoped<ExcelFm1Controller>();
+
 
 //Ajout des services de Notification : 
 // Configuration des services pour la notification

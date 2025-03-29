@@ -24,16 +24,18 @@ const ExcelFm1List = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 10;
+  const [error, setError] = useState(null); // Added error state
 
   useEffect(() => {
     const fetchExcelFm1Entries = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${BASE_URL}ExcelFm1/get-all-fm1`);
+        const response = await axios.get(`${BASE_URL}ImportExcel/get-all-fm1`); // Modified API endpoint
         setExcelFm1Entries(response.data);
         setFilteredEntries(response.data);
       } catch (err) {
         console.error('Erreur lors de la récupération des entrées ExcelFm1:', err);
+        setError('Failed to load ExcelFm1 entries.'); // Set error state
       } finally {
         setLoading(false);
       }
@@ -72,6 +74,14 @@ const ExcelFm1List = () => {
       <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
         <CircularProgress />
       </Box>
+    );
+  }
+
+  if (error) { // Display error message
+    return (
+      <Container>
+        <Typography color="error" variant="h6">{error}</Typography>
+      </Container>
     );
   }
 

@@ -14,11 +14,6 @@ import {
   CircularProgress,
   Pagination,
   TextField,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Button, // Import Button from MUI
 } from '@mui/material';
 import { jwtDecode } from 'jwt-decode';
 import { BASE_URL } from '../../config';
@@ -29,9 +24,6 @@ const ExcelComposents = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedComposent, setSelectedComposent] = useState(null);
-  const [newTotalAvailable, setNewTotalAvailable] = useState('');
   const [role, setRole] = useState('');
   const itemsPerPage = 10;
   const [error, setError] = useState(null);
@@ -40,7 +32,7 @@ const ExcelComposents = () => {
     const fetchComposents = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${BASE_URL}ExcelFm1/get-all-composent`);
+        const response = await axios.get(`${BASE_URL}ImportExcel/get-all-composent`); // Updated URL
         setComposents(response.data);
         setFilteredComposents(response.data);
       } catch (error) {
@@ -94,32 +86,6 @@ const ExcelComposents = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return filteredComposents.slice(startIndex, endIndex);
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setSelectedComposent(null);
-    setNewTotalAvailable('');
-  };
-
-  const handleUpdateTotalAvailable = async () => {
-    if (selectedComposent) {
-      try {
-        await axios.patch(`${BASE_URL}ExcelComposent/${selectedComposent.id}/update-total-available`, {
-          totalAvailable: parseFloat(newTotalAvailable),
-        });
-
-        const updatedComposents = composents.map((composent) =>
-          composent.id === selectedComposent.id ? { ...composent, totalAvailable: parseFloat(newTotalAvailable) } : composent
-        );
-        setComposents(updatedComposents);
-        setFilteredComposents(updatedComposents);
-
-        handleCloseDialog();
-      } catch (err) {
-        console.error('Erreur lors de la mise à jour de TotalAvailable:', err);
-      }
-    }
   };
 
   if (loading)
@@ -196,30 +162,6 @@ const ExcelComposents = () => {
           onChange={handlePageChange}
         />
       </Box>
-
-      {/* Dialog for Total Disponible Update */}
-      {role !== 'Technicien' && (
-        <Dialog open={openDialog} onClose={handleCloseDialog}>
-          <DialogTitle>Mettre à jour Total Disponible</DialogTitle>
-          <DialogContent>
-            <TextField
-              label="Total Disponible"
-              type="number"
-              fullWidth
-              value={newTotalAvailable}
-              onChange={(e) => setNewTotalAvailable(e.target.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog} color="primary">
-              Annuler
-            </Button>
-            <Button onClick={handleUpdateTotalAvailable} color="primary">
-              Mettre à jour
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
     </Container>
   );
 };

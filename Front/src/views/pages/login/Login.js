@@ -40,7 +40,7 @@ const Login = () => {
     const data = { email, password };
 
     try {
-      const response = await axios.post(`${BASE_URL}account/login`, data, {
+      const response = await axios.post(`${BASE_URL}2fa/login`, data, { // Corrected URL
         headers: {
           'Content-Type': 'application/json',
         },
@@ -89,7 +89,7 @@ const Login = () => {
     };
 
     try {
-      const response = await axios.post(`${BASE_URL}account/login-2fa`, data, {
+      const response = await axios.post(`${BASE_URL}2fa/login-2fa`, data, { // Corrected URL
         headers: {
           'Content-Type': 'application/json',
         },
