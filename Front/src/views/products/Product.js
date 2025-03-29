@@ -186,7 +186,7 @@ const Products = () => {
               <TableCell>Type d'appareil</TableCell>
               <TableCell>PS SN</TableCell>
               <TableCell>Date d'entrée</TableCell>
-              <TableCell>Expiration de la vérification</TableCell>
+              <TableCell>Date de dernière Verification</TableCell>
               <TableCell>Statut</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>

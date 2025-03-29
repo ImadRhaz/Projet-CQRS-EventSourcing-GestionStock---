@@ -1,16 +1,17 @@
 import React from 'react';
 import './App.css';
+//import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <div className="message-container">
-        <h1>Gestion des voitures</h1>
+        <h1>Stock and Order Management</h1>
         <ul className="feature-list">
-          <li><strong>Enregistrement des véhicules :</strong> Ajoutez et gérez facilement tous vos véhicules dans le système, avec des informations détaillées.</li>
-          <li><strong>Suivi des entretiens :</strong> Gardez un historique des tâches de maintenance pour chaque véhicule, incluant les coûts et les calendriers.</li>
-         
-          <li><strong>Coordination des tâches :</strong> Assignez et gérez efficacement les tâches liées aux réparations ou améliorations des véhicules.</li>
+          <li><strong>Radar Registration:</strong> Ensure that each radar is properly registered in the system.</li>
+          <li><strong>Detailed Tracking:</strong> Get comprehensive information on the status of each radar, associated parts, and ongoing orders.</li>
+          <li><strong>Smooth and Organized Management:</strong> Benefit from effective resource management for optimal radar maintenance.</li>
+          <li><strong>Order Management:</strong> Facilitate the tracking and management of parts orders for radar maintenance.</li>
         </ul>
       </div>
     </div>

@@ -63,7 +63,7 @@ const AppHeader = () => {
     if (isAuthenticated) {
       // Premier chargement immédiat
       fetchNotifications();
-      
+
       // Configurer l'intervalle
       refreshIntervalRef.current = setInterval(fetchNotifications, 10000);
     }
@@ -113,15 +113,41 @@ const AppHeader = () => {
     const filtered = notifications.filter(notification => {
       if (role === 'Magasinier') {
         return notification.message.startsWith('Une nouvelle commande a été créée (ID');
-      }
-      else if (role === 'Expert') {
+      } else if (role === 'Expert') {
         return notification.message.startsWith('La commande #');
       }
       return true;
     });
-    
-    setNotifications(filtered);
-    setUnreadNotifications(filtered.filter(n => !n.isRead).length);
+
+    const newCommandNotifications = filtered.filter(n => n.message.startsWith('Une nouvelle commande a été créée (ID'))
+      .sort((a, b) => {
+        const numA = parseInt(a.message.match(/\(ID: (\d+)\)/)?.[1] || '0', 10);
+        const numB = parseInt(b.message.match(/\(ID: (\d+)\)/)?.[1] || '0', 10);
+        return numB - numA;
+      });
+
+    const valideNotifications = filtered.filter(n => n.message.includes("a été validée"))
+      .sort((a, b) => {
+        const numA = parseInt(a.message.match(/#(\d+)/)?.[1] || '0', 10);
+        const numB = parseInt(b.message.match(/#(\d+)/)?.[1] || '0', 10);
+        return numB - numA;
+      });
+
+    const unreadAndOtherNotifications = filtered.filter(n =>
+      !n.isRead && !n.message.startsWith('Une nouvelle commande a été créée (ID') && !n.message.includes("a été validée")
+    ).sort((a, b) => b.id - a.id);
+
+    const readAndOtherNotifications = filtered.filter(n =>
+      n.isRead && !n.message.startsWith('Une nouvelle commande a été créée (ID') && !n.message.includes("a été validée")
+    );
+
+    const sortedNotifications = [...newCommandNotifications, ...valideNotifications, ...unreadAndOtherNotifications, ...readAndOtherNotifications];
+
+    // *AFTER* sorting, calculate the number of unread notifications.
+    const unreadCount = sortedNotifications.filter(n => !n.isRead).length;
+
+    setNotifications(sortedNotifications);
+    setUnreadNotifications(unreadCount); // Use the count calculated *after* sorting
   };
 
   const toggleDropdown = async () => {

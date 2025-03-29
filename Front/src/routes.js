@@ -13,8 +13,8 @@ const AddProduct = React.lazy(() => import('./views/products/AddProduct'));
 const ProductComponents = React.lazy(() => import('./views/products/ProductComponents'));
 const CommandesList = React.lazy(() => import('./views/commandes/CommandesList'));
 // const CommandeEnGrosList = React.lazy(() => import('./views/commande-en-gros/CommandeEnGrosList'));
-// const ExcelComposents = React.lazy(() => import('./views/products/ExcelComposents')); 
-// const FM1Data = React.lazy(() => import('./views/products/Fm1Data')); 
+const ExcelComposents = React.lazy(() => import('./views/products/ExcelComposents')); 
+ const FM1Data = React.lazy(() => import('./views/products/Fm1Data')); 
 
 
 
@@ -29,8 +29,8 @@ const routes = [
  { path: '/add-product', name: 'AddProduct', element: AddProduct },
    { path: '/product-history/:id', name: 'ProductHistory', element: ProductHistory },
  { path: '/product-components/:id', name: 'ProductComponents', element: ProductComponents },
-  // { path: '/excelComposents', name: 'ExcelComposents', element: ExcelComposents }, 
-  // { path: '/fm1Data', name: 'FM1Data', element: FM1Data }, 
+  { path: '/excelComposents', name: 'ExcelComposents', element: ExcelComposents }, 
+  { path: '/fm1Data', name: 'FM1Data', element: FM1Data }, 
   { path: '/login', name: 'Login', element: Login, protected: false },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/register', name: 'Register', element: Register, protected: false },

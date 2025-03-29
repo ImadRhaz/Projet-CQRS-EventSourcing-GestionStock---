@@ -10,26 +10,21 @@ import { CheckCircle } from "@mui/icons-material";
 import { BASE_URL } from "../../config";
 import { jwtDecode } from 'jwt-decode';
 
+// Styles
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    flexGrow: 1,
     textAlign: 'left',
-}));
-
-const StyledTableCellLarge = styled(TableCell)(({ theme }) => ({
-    flexGrow: 2,
-    textAlign: 'left',
+    width: '8%', // Slightly smaller width for each column
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    padding: theme.spacing(1),  // Reduced padding for more space
 }));
 
 const StyledTableHeadCell = styled(TableCell)(({ theme }) => ({
-    flexGrow: 1,
     textAlign: 'left',
     fontWeight: 'bold',
-}));
-
-const StyledTableHeadCellLarge = styled(TableCell)(({ theme }) => ({
-    flexGrow: 2,
-    textAlign: 'left',
-    fontWeight: 'bold',
+    width: '8%', // Slightly smaller width for each column
+    padding: theme.spacing(1), // Reduced padding for more space
 }));
 
 const CommandesList = () => {
@@ -163,8 +158,9 @@ const CommandesList = () => {
     const handleSearch = (e) => setSearchTerm(e.target.value.toLowerCase());
     const handlePageChange = (e, value) => setCurrentPage(value);
 
+    // Modified filter to search by commande.id
     const filteredCommandes = commandes.filter(cmd =>
-        cmd.composentProductName?.toLowerCase().includes(searchTerm)
+        String(cmd.id).toLowerCase().includes(searchTerm) // Convert cmd.id to string for comparison
     );
 
     const paginatedCommandes = filteredCommandes.slice(
@@ -185,13 +181,13 @@ const CommandesList = () => {
     );
 
     return (
-        <Container>
+        <Container maxWidth="xl"> {/* Expanded Container */}
             <Typography variant="h4" gutterBottom>Liste des Commandes</Typography>
 
             <Grid container spacing={2}>
                 <Grid item xs={12}>
                     <TextField
-                        label="Rechercher par composant"
+                        label="Rechercher par ID de commande"  // Changed label
                         variant="outlined"
                         fullWidth
                         onChange={handleSearch}
@@ -205,20 +201,20 @@ const CommandesList = () => {
                 </Typography>
             ) : (
                 <>
-                    <TableContainer component={Paper} sx={{ width: '100%', mt: 2, overflowX: 'auto' }}>
-                        <Table sx={{ minWidth: 1200 }}>
+                    <TableContainer component={Paper} sx={{ width: '100%', mt: 2 }}> {/* Removed overflowX: 'auto' */}
+                        <Table sx={{ minWidth: 1600 }}> {/* Increased minWidth */}
                             <TableHead>
                                 <TableRow>
                                     <StyledTableHeadCell>ID</StyledTableHeadCell>
                                     <StyledTableHeadCell>État</StyledTableHeadCell>
                                     <StyledTableHeadCell>Date Commande</StyledTableHeadCell>
                                     <StyledTableHeadCell>Nom Expert</StyledTableHeadCell>
-                                    <StyledTableHeadCellLarge>Nom Composant</StyledTableHeadCellLarge>
-                                    <StyledTableHeadCell>SN Composant</StyledTableHeadCell>
+                                    <StyledTableHeadCell>Nom Composant</StyledTableHeadCell>
+                                    <StyledTableHeadCell> Old SN Composant</StyledTableHeadCell>
                                     <StyledTableHeadCell>Urgent Composant</StyledTableHeadCell>
                                     <StyledTableHeadCell>Order Composant</StyledTableHeadCell>
                                     <StyledTableHeadCell>Raison</StyledTableHeadCell>
-                                    <StyledTableHeadCellLarge>Code Site FM1</StyledTableHeadCellLarge>
+                                    <StyledTableHeadCell>Code Site FM1</StyledTableHeadCell>
                                     <StyledTableHeadCell>Device Type FM1</StyledTableHeadCell>
                                     <StyledTableHeadCell>PS SN FM1</StyledTableHeadCell>
                                     {(roles.includes("Magasinier") || roles.includes("Admin")) && (
@@ -233,12 +229,12 @@ const CommandesList = () => {
                                         <StyledTableCell>{cmd.etatCommande}</StyledTableCell>
                                         <StyledTableCell>{new Date(cmd.dateCmd).toLocaleDateString()}</StyledTableCell>
                                         <StyledTableCell>{cmd.expertNom} {cmd.expertPrenom}</StyledTableCell>
-                                        <StyledTableCellLarge>{cmd.composentProductName}</StyledTableCellLarge>
+                                        <StyledTableCell>{cmd.composentProductName}</StyledTableCell>
                                         <StyledTableCell>{cmd.composentSN || '-'}</StyledTableCell>
                                         <StyledTableCell>{cmd.composentUrgentOrNot}</StyledTableCell>
                                         <StyledTableCell>{cmd.composentOrderOrNot}</StyledTableCell>
                                         <StyledTableCell>{cmd.raisonDeCommande}</StyledTableCell>
-                                        <StyledTableCellLarge>{cmd.fM1CodeSite}</StyledTableCellLarge>
+                                        <StyledTableCell>{cmd.fM1CodeSite}</StyledTableCell>
                                         <StyledTableCell>{cmd.fM1DeviceType}</StyledTableCell>
                                         <StyledTableCell>{cmd.fM1PsSn}</StyledTableCell>
                                         {(roles.includes("Magasinier") || roles.includes("Admin")) && (

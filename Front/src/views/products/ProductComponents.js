@@ -52,10 +52,13 @@ const ProductComponents = () => {
     const fetchComposents = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`${BASE_URL}Query/composents/by-fm1/${id}`, {
+            const response = await axios.get(`${BASE_URL}Query/composents/by-fm1/${id}`, { // Corrected Endpoint
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             setComposents(response.data);
+
+            // Log the fetched data to the console
+            console.log("Fetched Composents:", response.data);
         } catch (error) {
             console.error("Error fetching components:", error);
             setError("Failed to load components");
@@ -219,10 +222,11 @@ const ProductComponents = () => {
                                 <TableCell>{composent.productName}</TableCell>
                                 <TableCell>{composent.sn || '-'}</TableCell>
                                 <TableCell>
-                                    {composent.etatCommande === "Validée" 
-                                        ? (composent.snDuComposentValidé || 'No SN available') 
-                                        : 'Not validated'}
+                                    {composent.etatCommande === "Validée" ? (
+                                        composent.snDuComposentValidé ? composent.snDuComposentValidé : "No SN available"
+                                    ) : "Not validated"}
                                 </TableCell>
+
                                 <TableCell>{composent.urgentOrNot}</TableCell>
                                 <TableCell>{composent.orderOrNot}</TableCell>
                                 <TableCell>
@@ -245,10 +249,20 @@ const ProductComponents = () => {
                                             setSelectedComposent(composent);
                                             setIsCommandeDialogOpen(true);
                                         }}
-                                        disabled={composent.etatCommande === "Validée"}
-                                        color={composent.etatCommande === "Validée" ? "success" : "primary"}
+                                        disabled={composent.etatCommande === "Validée" || composent.etatCommande === "En attente"}
+                                        color={
+                                            composent.etatCommande === "Validée"
+                                                ? "success"
+                                                : composent.etatCommande === "En attente"
+                                                    ? "warning"
+                                                    : "primary"
+                                        }
                                     >
-                                        {composent.etatCommande === "Validée" ? "Validated" : "Order"}
+                                        {composent.etatCommande === "Validée"
+                                            ? "Validated"
+                                            : composent.etatCommande === "En attente"
+                                                ? "Pending"
+                                                : "Order"}
                                     </Button>
                                 </TableCell>
                             </TableRow>

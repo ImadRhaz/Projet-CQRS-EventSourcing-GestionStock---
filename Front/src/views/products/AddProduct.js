@@ -266,7 +266,7 @@ const AddProduct = () => {
                 {/* Champ Date Verification */}
                 <Box mb={2}>
                     <TextField
-                        label="Date Verification"
+                        label="Date de dernière Verification"
                         type="date"
                         variant="outlined"
                         fullWidth

@@ -53,24 +53,24 @@ const _nav = [
       color: 'info',
     },
   },
-  // {
-  //   component: CNavItem,
-  //   name: 'ExcelComposents',
-  //   to: '/excelComposents',
-  //   icon: <CIcon icon={cilDataTransferDown} customClassName="nav-icon" style={iconStyle} />, // Changed to a data-related icon
-  //   badge: {
-  //     color: 'info',
-  //   },
-  // },
-  // {
-  //   component: CNavItem,
-  //   name: 'FM1Data',
-  //   to: '/fm1Data',
-  //   icon: <CIcon icon={cilDataTransferDown} customClassName="nav-icon" style={iconStyle} />, // Changed to a data-related icon
-  //   badge: {
-  //     color: 'info',
-  //   },
-  // },
+   {
+     component: CNavItem,
+   name: 'ExcelComposents',
+     to: '/excelComposents',
+     icon: <CIcon icon={cilDataTransferDown} customClassName="nav-icon" style={iconStyle} />, // Changed to a data-related icon
+     badge: {
+      color: 'info',
+     },
+  },
+  {
+    component: CNavItem,
+     name: 'FM1Data',
+    to: '/fm1Data',
+    icon: <CIcon icon={cilDataTransferDown} customClassName="nav-icon" style={iconStyle} />, // Changed to a data-related icon
+     badge: {
+       color: 'info',
+    },
+  },
   {
     component: CNavItem,
     name: 'Logout',

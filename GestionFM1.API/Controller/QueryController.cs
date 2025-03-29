@@ -210,8 +210,7 @@ public async Task<IActionResult> GetAllComposents()
         ItemBaseId = c.ItemBaseId,
         ProductName = c.ProductName,
         SN = c.SN,
-        SnDuComposentValidé = c.Commande?.SnDuComposentValidé, // Accès via la commande
-        TotalAvailable = c.TotalAvailable,
+ SnDuComposentValidé = string.IsNullOrEmpty(c.Commande?.SnDuComposentValidé) ? null : c.Commande.SnDuComposentValidé,        TotalAvailable = c.TotalAvailable,
         UrgentOrNot = c.UrgentOrNot,
         OrderOrNot = c.OrderOrNot,
         FM1Id = c.FM1Id,

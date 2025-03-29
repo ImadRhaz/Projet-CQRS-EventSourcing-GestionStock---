@@ -1,226 +1,227 @@
-// import React, { useState, useEffect } from 'react';
-// import axios from 'axios';
-// import {
-//   Container,
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableContainer,
-//   TableHead,
-//   TableRow,
-//   Paper,
-//   Button,
-//   Typography,
-//   Box,
-//   CircularProgress,
-//   Pagination,
-//   TextField,
-//   Dialog,
-//   DialogActions,
-//   DialogContent,
-//   DialogTitle,
-//   IconButton,
-// } from '@mui/material';
-// import EditIcon from '@mui/icons-material/Edit';
-// import { jwtDecode } from 'jwt-decode'; // Assurez-vous d'avoir installé jwt-decode
-// import { BASE_URL } from '../../config';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import {
+  Container,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+  Box,
+  CircularProgress,
+  Pagination,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Button, // Import Button from MUI
+} from '@mui/material';
+import { jwtDecode } from 'jwt-decode';
+import { BASE_URL } from '../../config';
 
-// const ExcelComposents = () => {
-//   const [composents, setComposents] = useState([]);
-//   const [filteredComposents, setFilteredComposents] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [currentPage, setCurrentPage] = useState(1);
-//   const [searchTerm, setSearchTerm] = useState('');
-//   const [openDialog, setOpenDialog] = useState(false);
-//   const [selectedComposent, setSelectedComposent] = useState(null);
-//   const [newTotalAvailable, setNewTotalAvailable] = useState('');
-//   const [role, setRole] = useState(''); // Ajouter l'état du rôle
-//   const itemsPerPage = 10;
+const ExcelComposents = () => {
+  const [composents, setComposents] = useState([]);
+  const [filteredComposents, setFilteredComposents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedComposent, setSelectedComposent] = useState(null);
+  const [newTotalAvailable, setNewTotalAvailable] = useState('');
+  const [role, setRole] = useState('');
+  const itemsPerPage = 10;
+  const [error, setError] = useState(null);
 
-//   useEffect(() => {
-//     const fetchComposents = async () => {
-//       setLoading(true);
-//       try {
-//         const response = await axios.get(`${BASE_URL}ExcelComposent/get-all`);
-//         const data = response.data.$values ? response.data.$values : response.data;
-//         setComposents(data);
-//         setFilteredComposents(data);
-//       } catch (err) {
-//         console.error('Erreur lors de la récupération des composants Excel:', err);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
+  useEffect(() => {
+    const fetchComposents = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`${BASE_URL}ExcelFm1/get-all-composent`);
+        setComposents(response.data);
+        setFilteredComposents(response.data);
+      } catch (error) {
+        console.error('Error fetching composents:', error);
+        setError('Failed to load composents.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-//     fetchComposents();
-//   }, []);
+    fetchComposents();
+  }, []);
 
-//   useEffect(() => {
-//     const token = localStorage.getItem('token');
-//     if (token) {
-//       const decodedToken = jwtDecode(token);
-//       setRole(decodedToken.role); // Décodez et définissez le rôle
-//     }
-//   }, []); 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        setRole(decodedToken.role);
+      } catch (error) {
+        console.error("Error decoding token:", error);
+        localStorage.removeItem('token');
+        setRole('');
+      }
+    }
+  }, []);
 
-//   const handlePageChange = (event, value) => {
-//     setCurrentPage(value);
-//   };
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
 
-//   const handleSearchChange = (event) => {
-//     setSearchTerm(event.target.value);
-//     if (event.target.value === '') {
-//       setFilteredComposents(composents);
-//     } else {
-//       const filtered = composents.filter((composent) =>
-//         composent.anComposent.toLowerCase().includes(event.target.value.toLowerCase()) ||
-//         composent.composentName.toLowerCase().includes(event.target.value.toLowerCase())
-//       );
-//       setFilteredComposents(filtered);
-//       setCurrentPage(1);
-//     }
-//   };
+  const handleSearchChange = (event) => {
+    const searchTermValue = event.target.value;
+    setSearchTerm(searchTermValue);
 
-//   const getPaginatedComposents = () => {
-//     const startIndex = (currentPage - 1) * itemsPerPage;
-//     const endIndex = startIndex + itemsPerPage;
-//     return Array.isArray(filteredComposents)
-//       ? filteredComposents.slice(startIndex, endIndex)
-//       : [];
-//   };
+    if (searchTermValue === '') {
+      setFilteredComposents(composents);
+      setCurrentPage(1);
+    } else {
+      const filtered = composents.filter(
+        (composent) =>
+          composent.anComposent?.toLowerCase().includes(searchTermValue.toLowerCase()) ||
+          composent.composentName?.toLowerCase().includes(searchTermValue.toLowerCase())
+      );
+      setFilteredComposents(filtered);
+      setCurrentPage(1);
+    }
+  };
 
-//   const handleOpenDialog = (composent) => {
-//     setSelectedComposent(composent);
-//     setNewTotalAvailable(composent.totalAvailable.toString());
-//     setOpenDialog(true);
-//   };
+  const getPaginatedComposents = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredComposents.slice(startIndex, endIndex);
+  };
 
-//   const handleCloseDialog = () => {
-//     setOpenDialog(false);
-//     setSelectedComposent(null);
-//     setNewTotalAvailable('');
-//   };
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedComposent(null);
+    setNewTotalAvailable('');
+  };
 
-//   const handleUpdateTotalAvailable = async () => {
-//     if (selectedComposent) {
-//       try {
-//         const response = await axios.patch(`${BASE_URL}ExcelComposent/${selectedComposent.id}/update-total-available`, {
-//           totalAvailable: parseFloat(newTotalAvailable),
-//         });
+  const handleUpdateTotalAvailable = async () => {
+    if (selectedComposent) {
+      try {
+        await axios.patch(`${BASE_URL}ExcelComposent/${selectedComposent.id}/update-total-available`, {
+          totalAvailable: parseFloat(newTotalAvailable),
+        });
 
-//         const updatedComposents = composents.map((composent) =>
-//           composent.id === selectedComposent.id ? { ...composent, totalAvailable: response.data.totalAvailable } : composent
-//         );
-//         setComposents(updatedComposents);
-//         setFilteredComposents(updatedComposents);
-//         handleCloseDialog();
-//       } catch (err) {
-//         console.error('Erreur lors de la mise à jour de TotalAvailable:', err);
-//       }
-//     }
-//   };
+        const updatedComposents = composents.map((composent) =>
+          composent.id === selectedComposent.id ? { ...composent, totalAvailable: parseFloat(newTotalAvailable) } : composent
+        );
+        setComposents(updatedComposents);
+        setFilteredComposents(updatedComposents);
 
-//   if (loading) return <CircularProgress />;
+        handleCloseDialog();
+      } catch (err) {
+        console.error('Erreur lors de la mise à jour de TotalAvailable:', err);
+      }
+    }
+  };
 
-//   const paginatedComposents = getPaginatedComposents();
+  if (loading)
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <CircularProgress />
+      </Box>
+    );
 
-//   return (
-//     <Container>
-//       {/* Titre et affichage du rôle */}
-//       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-//         <Typography variant="h4" gutterBottom>
-//           Liste des Composants Excel
-//         </Typography>
+  if (error) return <Typography color="error">{error}</Typography>;
 
-//         {/* Affichage du rôle */}
-//         <Typography variant="h6" gutterBottom>
-//           Role: {role === 'Technicien' ? 'Maintenancier' : role}
-//         </Typography>
-//       </Box>
+  const paginatedComposents = getPaginatedComposents();
 
-//       <Box mb={3}>
-//         <TextField
-//           label="Rechercher par AnComposent ou Nom du Composant"
-//           variant="outlined"
-//           fullWidth
-//           value={searchTerm}
-//           onChange={handleSearchChange}
-//         />
-//       </Box>
+  return (
+    <Container>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h4" gutterBottom>
+          Liste des Composants Excel
+        </Typography>
+        <Typography variant="h6" gutterBottom>
+          Role: {role === 'Technicien' ? 'Maintenancier' : role}
+        </Typography>
+      </Box>
 
-//       <TableContainer component={Paper}>
-//         <Table>
-//           <TableHead>
-//             <TableRow>
-//               <TableCell>ID</TableCell>
-//               <TableCell>AnComposent</TableCell>
-//               <TableCell>Nom du Composant</TableCell>
-//               <TableCell>SN Composant</TableCell>
-//               <TableCell>Total Disponible</TableCell>
-//               {role !== 'Technicien' && <TableCell>Actions</TableCell>}
-//             </TableRow>
-//           </TableHead>
-//           <TableBody>
-//             {paginatedComposents.length === 0 ? (
-//               <TableRow>
-//                 <TableCell colSpan={6} align="center">
-//                   <Typography variant="h6" color="textSecondary">
-//                     Aucun composant trouvé !
-//                   </Typography>
-//                 </TableCell>
-//               </TableRow>
-//             ) : (
-//               paginatedComposents.map((composent) => (
-//                 <TableRow key={composent.id}>
-//                   <TableCell>{composent.id}</TableCell>
-//                   <TableCell>{composent.anComposent}</TableCell>
-//                   <TableCell>{composent.composentName}</TableCell>
-//                   <TableCell>{composent.snComposent}</TableCell>
-//                   <TableCell>{composent.totalAvailable}</TableCell>
-//                   {role !== 'Technicien' && (
-//                     <TableCell>
-//                       <IconButton onClick={() => handleOpenDialog(composent)}>
-//                         <EditIcon style={{ color: 'blue' }} />
-//                       </IconButton>
-//                     </TableCell>
-//                   )}
-//                 </TableRow>
-//               ))
-//             )}
-//           </TableBody>
-//         </Table>
-//       </TableContainer>
+      <Box mb={3}>
+        <TextField
+          label="Rechercher par AnComposent ou Nom du Composant"
+          variant="outlined"
+          fullWidth
+          value={searchTerm}
+          onChange={handleSearchChange}
+        />
+      </Box>
 
-//       <Box mt={2} display="flex" justifyContent="center">
-//         <Pagination
-//           count={Math.ceil(filteredComposents.length / itemsPerPage)}
-//           page={currentPage}
-//           onChange={handlePageChange}
-//         />
-//       </Box>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>AnComposent</TableCell>
+              <TableCell>Nom du Composant</TableCell>
+              <TableCell>SN Composant</TableCell>
+              <TableCell>Total Disponible</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginatedComposents.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  <Typography variant="h6" color="textSecondary">
+                    Aucun composant trouvé !
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedComposents.map((composent) => (
+                <TableRow key={composent.id}>
+                  <TableCell>{composent.id}</TableCell>
+                  <TableCell>{composent.anComposent}</TableCell>
+                  <TableCell>{composent.composentName}</TableCell>
+                  <TableCell>{composent.snComposent}</TableCell>
+                  <TableCell>{composent.totalAvailable}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-//       <Dialog open={openDialog} onClose={handleCloseDialog}>
-//         <DialogTitle>Mettre à jour Total Disponible</DialogTitle>
-//         <DialogContent>
-//           <TextField
-//             label="Total Disponible"
-//             type="number"
-//             fullWidth
-//             value={newTotalAvailable}
-//             onChange={(e) => setNewTotalAvailable(e.target.value)}
-//           />
-//         </DialogContent>
-//         <DialogActions>
-//           <Button onClick={handleCloseDialog} color="primary">
-//             Annuler
-//           </Button>
-//           <Button onClick={handleUpdateTotalAvailable} color="primary">
-//             Mettre à jour
-//           </Button>
-//         </DialogActions>
-//       </Dialog>
-//     </Container>
-//   );
-// };
+      <Box mt={2} display="flex" justifyContent="center">
+        <Pagination
+          count={Math.ceil(filteredComposents.length / itemsPerPage)}
+          page={currentPage}
+          onChange={handlePageChange}
+        />
+      </Box>
 
-// export default ExcelComposents;
+      {/* Dialog for Total Disponible Update */}
+      {role !== 'Technicien' && (
+        <Dialog open={openDialog} onClose={handleCloseDialog}>
+          <DialogTitle>Mettre à jour Total Disponible</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Total Disponible"
+              type="number"
+              fullWidth
+              value={newTotalAvailable}
+              onChange={(e) => setNewTotalAvailable(e.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="primary">
+              Annuler
+            </Button>
+            <Button onClick={handleUpdateTotalAvailable} color="primary">
+              Mettre à jour
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+    </Container>
+  );
+};
+
+export default ExcelComposents;
